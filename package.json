@@ -46,5 +46,8 @@
 	},
 	"keywords": [
 		"svelte"
-	]
+	],
+	"dependencies": {
+		"zod": "^4.3.5"
+	}
 }
