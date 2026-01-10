@@ -2,55 +2,12 @@
   import { onDestroy } from "svelte";
   import { get } from "svelte/store";
   import type { LevelDefinition } from "$lib/levels/levelSchema";
+  import { parseLevelDefinition } from "$lib/levels/levelSchema";
   import type { Command, CommandType } from "$lib/game/types";
   import { createGameStateStore } from "$lib/state/gameState";
+  import levelData from "$lib/levels/level4.json";
 
-  const level: LevelDefinition = {
-    id: "level-4",
-    title: "Level 4",
-    grid: {
-      width: 9,
-      height: 7,
-      tiles: Array.from({ length: 7 }, (_, y) =>
-        Array.from({ length: 9 }, (_, x) => {
-          const isFloor =
-            (y === 1 && x >= 3 && x <= 5) ||
-            (y >= 2 && y <= 4 && x >= 2 && x <= 6) ||
-            (y === 5 && x >= 3 && x <= 5);
-
-          return {
-            x,
-            y,
-            type: isFloor ? "floor" : "wall",
-            tileColor: isFloor ? "#12b5c0" : "none",
-            coin: isFloor && ((x === 2 && y === 2) || (x === 6 && y === 2)),
-          };
-        })
-      ).flat(),
-    },
-    start: { x: 4, y: 3, dir: "E" },
-    rules: {
-      onOutOfBounds: "reset",
-      onWallCollision: "reset",
-    },
-    program: {
-      entry: "F1",
-      functions: {
-        F1: { maxSlots: 5 },
-        F2: { maxSlots: 4 },
-      },
-    },
-    capabilities: {
-      availableCommands: ["MOVE_FORWARD", "TURN_LEFT", "TURN_RIGHT", "CALL"],
-      callTargets: ["F1", "F2"],
-      availableColors: ["none", "#12b5c0"],
-      colorRule: "allowAllOnNone",
-    },
-    strings: {
-      success: "全てのコインを集めました！",
-      failExecuted: "コインを取り切れませんでした。",
-    },
-  };
+  const level: LevelDefinition = parseLevelDefinition(levelData);
 
   const palette: Array<{ id: string; label: string; type: CommandType | null }> = [
     { id: "MOVE_FORWARD", label: "↑", type: "MOVE_FORWARD" },
