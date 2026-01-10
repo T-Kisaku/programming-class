@@ -56,7 +56,6 @@
     { id: "MOVE_FORWARD", label: "↑", type: "MOVE_FORWARD" },
     { id: "TURN_LEFT", label: "⟲", type: "TURN_LEFT" },
     { id: "TURN_RIGHT", label: "⟳", type: "TURN_RIGHT" },
-    { id: "CALL", label: "F", type: "CALL" },
     { id: "ERASE", label: "消", type: null },
   ];
 
@@ -74,7 +73,7 @@
   const gridRows = Array.from({ length: level.grid.height }, (_, index) => index);
   const gridCols = Array.from({ length: level.grid.width }, (_, index) => index);
   let selectedCommand: CommandType | null = "MOVE_FORWARD";
-  let selectedCallTarget = "F2";
+  let selectedCallTarget = "F1";
 
   let autoRun = false;
   let timer: ReturnType<typeof setInterval> | null = null;
@@ -169,6 +168,21 @@
     return commandLabels[command.type];
   };
 
+  const getActiveFrame = () =>
+    $gameState.runtime.stack.length > 0
+      ? $gameState.runtime.stack[$gameState.runtime.stack.length - 1]
+      : null;
+
+  const isActiveSlot = (functionId: string, slotIndex: number) => {
+    if ($gameState.runtime.status !== "running") {
+      return false;
+    }
+    const activeFrame = getActiveFrame();
+    return (
+      activeFrame?.functionId === functionId && activeFrame.instructionIndex === slotIndex
+    );
+  };
+
   const handleFailure = () => {
     pauseAuto();
     failedNotice = true;
@@ -180,6 +194,14 @@
       failedNotice = false;
       failureTimeout = null;
     }, 2000);
+  };
+
+  const closeFailure = () => {
+    failedNotice = false;
+    if (failureTimeout) {
+      clearTimeout(failureTimeout);
+      failureTimeout = null;
+    }
   };
 
   $: if (
@@ -222,10 +244,6 @@
       <button type="button" on:click={resetRuntime}>リセット</button>
     </div>
   </header>
-
-  {#if failedNotice}
-    <div class="notice" role="status">失敗しました。キャラクターをリセットしました。</div>
-  {/if}
 
   <section class="layout">
     <div class="board">
@@ -270,12 +288,17 @@
           {/each}
         </div>
         <div class="call-targets" aria-live="polite">
-          <span>CALL先:</span>
+          <span>CALL:</span>
           {#each level.capabilities.callTargets as target}
             <button
               type="button"
-              class={`target-button ${selectedCallTarget === target ? "active" : ""}`}
-              on:click={() => (selectedCallTarget = target)}
+              class={`target-button ${
+                selectedCommand === "CALL" && selectedCallTarget === target ? "active" : ""
+              }`}
+              on:click={() => {
+                selectedCallTarget = target;
+                selectedCommand = "CALL";
+              }}
             >
               {target}
             </button>
@@ -306,7 +329,7 @@
               {#each slots as command, slotIndex}
                 <button
                   type="button"
-                  class={`slot ${command ? "filled" : ""}`}
+                  class={`slot ${command ? "filled" : ""} ${isActiveSlot(functionId, slotIndex) ? "active" : ""}`}
                   on:click={() => setSlotCommand(functionId, slotIndex)}
                 >
                   {describeCommand(command)}
@@ -320,6 +343,18 @@
     </div>
   </section>
 </main>
+
+{#if failedNotice}
+  <div class="overlay" role="alertdialog" aria-live="assertive" aria-label="失敗">
+    <div class="dialog">
+      <h2>失敗しました</h2>
+      <p>キャラクターをリセットしました。もう一度試してください。</p>
+      <button type="button" class="primary" on:click={closeFailure}>
+        OK
+      </button>
+    </div>
+  </div>
+{/if}
 
 <style>
   :global(body) {
@@ -367,16 +402,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.6rem;
-  }
-
-  .notice {
-    background: rgba(248, 113, 113, 0.2);
-    border: 1px solid rgba(248, 113, 113, 0.4);
-    color: #fecaca;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    font-weight: 600;
-    width: fit-content;
   }
 
   button {
@@ -571,6 +596,49 @@
   .slot.filled {
     background: #e2e8f0;
     color: #0f172a;
+  }
+
+  .slot.active {
+    border-color: #facc15;
+    box-shadow: 0 0 12px rgba(250, 204, 21, 0.7);
+    animation: pulse 0.8s ease-in-out infinite;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.75);
+    display: grid;
+    place-items: center;
+    z-index: 10;
+  }
+
+  .dialog {
+    background: #0f172a;
+    border-radius: 18px;
+    padding: 2rem 2.5rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    text-align: center;
+    max-width: 320px;
+  }
+
+  .dialog h2 {
+    margin: 0 0 0.5rem;
+  }
+
+  .dialog p {
+    margin: 0 0 1.5rem;
+    color: #cbd5f5;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.03);
+    }
   }
 
   @media (max-width: 960px) {
