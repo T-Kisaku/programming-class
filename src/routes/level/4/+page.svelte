@@ -79,6 +79,7 @@
   let timer: ReturnType<typeof setInterval> | null = null;
   let speedValue = 60;
   let failedNotice = false;
+  let resetNotice = false;
   let failureTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const delayFromSpeed = () => 900 - Math.round((speedValue / 100) * 650);
@@ -204,6 +205,16 @@
     }
   };
 
+  const handleResetEvent = () => {
+    pauseAuto();
+    resetNotice = true;
+    gameState.stop();
+  };
+
+  const closeReset = () => {
+    resetNotice = false;
+  };
+
   $: if (
     autoRun &&
     ($gameState.runtime.status === "success" || $gameState.runtime.status === "failed")
@@ -213,6 +224,10 @@
 
   $: if ($gameState.runtime.status === "failed" && !failedNotice) {
     handleFailure();
+  }
+
+  $: if ($gameState.runtime.lastEvent === "reset" && !resetNotice) {
+    handleResetEvent();
   }
 
   $: if (autoRun) {
@@ -344,12 +359,25 @@
   </section>
 </main>
 
-{#if failedNotice}
-  <div class="overlay" role="alertdialog" aria-live="assertive" aria-label="失敗">
+{#if failedNotice || resetNotice}
+  <div
+    class="overlay"
+    role="alertdialog"
+    aria-live="assertive"
+    aria-label={failedNotice ? "失敗" : "リセット"}
+  >
     <div class="dialog">
-      <h2>失敗しました</h2>
-      <p>キャラクターをリセットしました。もう一度試してください。</p>
-      <button type="button" class="primary" on:click={closeFailure}>
+      <h2>{failedNotice ? "失敗しました" : "コース外です"}</h2>
+      <p>
+        {failedNotice
+          ? "キャラクターをリセットしました。もう一度試してください。"
+          : "コースからはみ出したため、実行を中止しました。"}
+      </p>
+      <button
+        type="button"
+        class="primary"
+        on:click={failedNotice ? closeFailure : closeReset}
+      >
         OK
       </button>
     </div>
