@@ -2,44 +2,48 @@
   import { onDestroy } from "svelte";
   import { get } from "svelte/store";
   import type { LevelDefinition } from "$lib/levels/levelSchema";
-  import type { Program } from "$lib/game/types";
+  import type { Command, CommandType } from "$lib/game/types";
   import { createGameStateStore } from "$lib/state/gameState";
 
   const level: LevelDefinition = {
-    id: "demo-level",
-    title: "Demo Level",
+    id: "level-4",
+    title: "Level 4",
     grid: {
-      width: 5,
-      height: 5,
-      tiles: Array.from({ length: 5 }, (_, y) =>
-        Array.from({ length: 5 }, (_, x) => {
-          const isBorder = x === 0 || y === 0 || x === 4 || y === 4;
+      width: 9,
+      height: 7,
+      tiles: Array.from({ length: 7 }, (_, y) =>
+        Array.from({ length: 9 }, (_, x) => {
+          const isFloor =
+            (y === 1 && x >= 3 && x <= 5) ||
+            (y >= 2 && y <= 4 && x >= 2 && x <= 6) ||
+            (y === 5 && x >= 3 && x <= 5);
+
           return {
             x,
             y,
-            type: isBorder ? "wall" : "floor",
-            tileColor: isBorder ? "none" : (x + y) % 2 === 0 ? "#cce7ff" : "#dff7d2",
-            coin: !isBorder && ((x === 2 && y === 1) || (x === 3 && y === 2) || (x === 2 && y === 3)),
+            type: isFloor ? "floor" : "wall",
+            tileColor: isFloor ? "#12b5c0" : "none",
+            coin: isFloor && ((x === 2 && y === 2) || (x === 6 && y === 2)),
           };
         })
       ).flat(),
     },
-    start: { x: 1, y: 1, dir: "E" },
+    start: { x: 4, y: 3, dir: "E" },
     rules: {
       onOutOfBounds: "reset",
       onWallCollision: "stay",
     },
     program: {
-      entry: "main",
+      entry: "F1",
       functions: {
-        main: { maxSlots: 5 },
-        helper: { maxSlots: 4 },
+        F1: { maxSlots: 5 },
+        F2: { maxSlots: 4 },
       },
     },
     capabilities: {
       availableCommands: ["MOVE_FORWARD", "TURN_LEFT", "TURN_RIGHT", "CALL"],
-      callTargets: ["main", "helper"],
-      availableColors: ["none", "#cce7ff", "#dff7d2"],
+      callTargets: ["F1", "F2"],
+      availableColors: ["none", "#12b5c0"],
       colorRule: "allowAllOnNone",
     },
     strings: {
@@ -48,32 +52,37 @@
     },
   };
 
-  const testProgram: Program = {
-    main: [
-      { type: "MOVE_FORWARD", color: "none" },
-      { type: "MOVE_FORWARD", color: "none" },
-      { type: "TURN_RIGHT", color: "none" },
-      { type: "MOVE_FORWARD", color: "none" },
-      { type: "CALL", color: "none", target: "helper" },
-    ],
-    helper: [
-      { type: "TURN_RIGHT", color: "none" },
-      { type: "MOVE_FORWARD", color: "none" },
-      { type: "TURN_LEFT", color: "none" },
-      { type: "MOVE_FORWARD", color: "none" },
-    ],
+  const palette: Array<{ id: string; label: string; type: CommandType | null }> = [
+    { id: "MOVE_FORWARD", label: "↑", type: "MOVE_FORWARD" },
+    { id: "TURN_LEFT", label: "⟲", type: "TURN_LEFT" },
+    { id: "TURN_RIGHT", label: "⟳", type: "TURN_RIGHT" },
+    { id: "CALL", label: "F", type: "CALL" },
+    { id: "ERASE", label: "消", type: null },
+  ];
+
+  const commandLabels: Record<CommandType, string> = {
+    MOVE_FORWARD: "↑",
+    TURN_LEFT: "⟲",
+    TURN_RIGHT: "⟳",
+    CALL: "F",
   };
 
   const gameState = createGameStateStore(level);
-  gameState.setProgram(testProgram);
 
   const coordKey = (x: number, y: number) => `${x},${y}`;
   const tileLookup = new Map(level.grid.tiles.map((tile) => [coordKey(tile.x, tile.y), tile]));
   const gridRows = Array.from({ length: level.grid.height }, (_, index) => index);
   const gridCols = Array.from({ length: level.grid.width }, (_, index) => index);
+  const totalCoins = level.grid.tiles.filter((tile) => tile.coin).length;
+
+  let selectedCommand: CommandType | null = "MOVE_FORWARD";
+  let selectedCallTarget = "F2";
 
   let autoRun = false;
   let timer: ReturnType<typeof setInterval> | null = null;
+  let speedValue = 60;
+
+  const delayFromSpeed = () => 900 - Math.round((speedValue / 100) * 650);
 
   const pauseAuto = () => {
     autoRun = false;
@@ -101,7 +110,19 @@
     }
     timer = setInterval(() => {
       gameState.step();
-    }, 350);
+    }, delayFromSpeed());
+  };
+
+  const restartAutoTimer = () => {
+    if (!autoRun) {
+      return;
+    }
+    if (timer) {
+      clearInterval(timer);
+    }
+    timer = setInterval(() => {
+      gameState.step();
+    }, delayFromSpeed());
   };
 
   const stopRuntime = () => {
@@ -114,11 +135,49 @@
     gameState.resetRuntime();
   };
 
+  const resetProgram = () => {
+    pauseAuto();
+    gameState.resetAll();
+  };
+
+  const selectCommand = (command: CommandType | null) => {
+    selectedCommand = command;
+  };
+
+  const setSlotCommand = (functionId: string, slotIndex: number) => {
+    if (!selectedCommand) {
+      gameState.setCommand(functionId, slotIndex, null);
+      return;
+    }
+
+    const command: Command = {
+      type: selectedCommand,
+      color: "none",
+      ...(selectedCommand === "CALL" ? { target: selectedCallTarget } : {}),
+    };
+
+    gameState.setCommand(functionId, slotIndex, command);
+  };
+
+  const describeCommand = (command: Command | null) => {
+    if (!command) {
+      return "";
+    }
+    if (command.type === "CALL") {
+      return `${commandLabels[command.type]}${command.target ?? ""}`;
+    }
+    return commandLabels[command.type];
+  };
+
   $: if (
     autoRun &&
     ($gameState.runtime.status === "success" || $gameState.runtime.status === "failed")
   ) {
     pauseAuto();
+  }
+
+  $: if (autoRun) {
+    restartAutoTimer();
   }
 
   onDestroy(() => {
@@ -129,12 +188,15 @@
 <main class="page">
   <header class="header">
     <div>
-      <h1>{level.title}</h1>
-      <p>ゲームロジックのテスト用UIです。プログラムは固定です。</p>
+      <p class="level">Level 4</p>
+      <h1>編集パレットで挑戦</h1>
+      <p class="subtitle">
+        コマンドを選んで、F1・F2のスロットに配置してください。Go! で実行できます。
+      </p>
     </div>
     <div class="controls">
-      <button type="button" on:click={stepOnce}>1ステップ進める</button>
-      <button type="button" on:click={startAuto} disabled={autoRun}>自動再生</button>
+      <button type="button" class="primary" on:click={startAuto} disabled={autoRun}>Go !</button>
+      <button type="button" on:click={stepOnce}>1ステップ</button>
       <button type="button" on:click={pauseAuto} disabled={!autoRun}>一時停止</button>
       <button type="button" on:click={stopRuntime}>停止</button>
       <button type="button" on:click={resetRuntime}>リセット</button>
@@ -151,17 +213,12 @@
             {@const isPlayer = $gameState.runtime.position.x === x && $gameState.runtime.position.y === y}
             {@const hasCoin =
               tile?.coin && !$gameState.runtime.collectedCoins.includes(coordKey(x, y))}
-            {@const tileBackground = isWall
-              ? ""
-              : tile?.tileColor === "none"
-                ? "#fefcf7"
-                : tile?.tileColor ?? "#fefcf7"}
             <div
               class={`tile ${isWall ? "wall" : "floor"}`}
-              style={tileBackground ? `background-color: ${tileBackground}` : ""}
+              style={!isWall ? "background-color: #12b5c0" : ""}
             >
               {#if hasCoin}
-                <span class="coin" aria-label="coin">●</span>
+                <span class="coin" aria-label="coin">◆</span>
               {/if}
               {#if isPlayer}
                 <span class="player" data-dir={$gameState.runtime.position.dir} aria-label="player">
@@ -174,7 +231,68 @@
       </div>
     </div>
 
-    <div class="panel">
+    <div class="side">
+      <section class="palette">
+        <h2>編集パレット</h2>
+        <div class="palette-grid">
+          {#each palette as item}
+            <button
+              type="button"
+              class={`palette-button ${selectedCommand === item.type ? "active" : ""}`}
+              on:click={() => selectCommand(item.type)}
+            >
+              <span>{item.label}</span>
+            </button>
+          {/each}
+        </div>
+        <div class="call-targets" aria-live="polite">
+          <span>CALL先:</span>
+          {#each level.capabilities.callTargets as target}
+            <button
+              type="button"
+              class={`target-button ${selectedCallTarget === target ? "active" : ""}`}
+              on:click={() => (selectedCallTarget = target)}
+            >
+              {target}
+            </button>
+          {/each}
+        </div>
+        <div class="speed">
+          <span>fast</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            bind:value={speedValue}
+            on:input={restartAutoTimer}
+          />
+          <span>slow</span>
+        </div>
+      </section>
+
+      <section class="program">
+        <div class="program-header">
+          <h2>プログラム</h2>
+          <button type="button" class="ghost" on:click={resetProgram}>全消去</button>
+        </div>
+        {#each Object.entries($gameState.program) as [functionId, slots]}
+          <div class="program-block">
+            <div class="function-title">{functionId}</div>
+            <div class="slots">
+              {#each slots as command, slotIndex}
+                <button
+                  type="button"
+                  class={`slot ${command ? "filled" : ""}`}
+                  on:click={() => setSlotCommand(functionId, slotIndex)}
+                >
+                  {describeCommand(command)}
+                </button>
+              {/each}
+            </div>
+          </div>
+        {/each}
+      </section>
+
       <section class="status">
         <h2>ステータス</h2>
         <dl>
@@ -192,43 +310,9 @@
           </div>
           <div>
             <dt>取得コイン</dt>
-            <dd>{$gameState.runtime.collectedCoins.length} / 3</dd>
-          </div>
-          <div>
-            <dt>スタック</dt>
-            <dd>
-              {#if $gameState.runtime.stack.length === 0}
-                -
-              {:else}
-                <ul>
-                  {#each $gameState.runtime.stack as frame}
-                    <li>{frame.functionId} #{frame.instructionIndex + 1}</li>
-                  {/each}
-                </ul>
-              {/if}
-            </dd>
+            <dd>{$gameState.runtime.collectedCoins.length} / {totalCoins}</dd>
           </div>
         </dl>
-      </section>
-
-      <section class="program">
-        <h2>テストプログラム</h2>
-        {#each Object.entries(testProgram) as [functionId, commands]}
-          <div class="program-block">
-            <h3>function {functionId}</h3>
-            <ol>
-              {#each commands as command}
-                <li>
-                  <span class="command">{command.type}</span>
-                  {#if command.type === "CALL"}
-                    <span class="target">→ {command.target}</span>
-                  {/if}
-                  <span class="color">({command.color})</span>
-                </li>
-              {/each}
-            </ol>
-          </div>
-        {/each}
       </section>
     </div>
   </section>
@@ -236,91 +320,118 @@
 
 <style>
   :global(body) {
-    background: #f7f6f3;
-    color: #1b1b1b;
+    margin: 0;
+    background: radial-gradient(circle at top, #2b2b2b, #111);
+    color: #f8fafc;
   }
 
   .page {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    padding: 2rem;
+    padding: 2rem 2.5rem 3rem;
     font-family: "Segoe UI", system-ui, sans-serif;
   }
 
   .header {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+    align-items: center;
   }
 
-  .header h1 {
-    margin: 0 0 0.25rem;
-    font-size: 1.8rem;
+  .level {
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-size: 0.85rem;
+    margin: 0 0 0.35rem;
+    color: #94a3b8;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    margin: 0.4rem 0 0;
+    color: #cbd5f5;
   }
 
   .controls {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.6rem;
   }
 
   button {
     border: none;
-    border-radius: 999px;
+    border-radius: 12px;
     padding: 0.5rem 1rem;
-    background: #1f6feb;
-    color: #fff;
+    background: #475569;
+    color: #f8fafc;
     cursor: pointer;
     font-weight: 600;
   }
 
+  button.primary {
+    background: #ffffff;
+    color: #111827;
+  }
+
+  button.ghost {
+    background: transparent;
+    color: #cbd5f5;
+    border: 1px solid #334155;
+  }
+
   button[disabled] {
-    background: #9aa4b2;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 
   .layout {
     display: grid;
-    grid-template-columns: minmax(260px, 360px) minmax(280px, 1fr);
+    grid-template-columns: minmax(280px, 520px) minmax(280px, 1fr);
     gap: 2rem;
     align-items: start;
   }
 
   .board {
-    background: #ffffff;
-    padding: 1.5rem;
-    border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+    background: #151515;
+    border-radius: 22px;
+    padding: 2rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
   }
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(var(--cols), 56px);
+    grid-template-columns: repeat(var(--cols), 54px);
     gap: 6px;
     justify-content: center;
   }
 
   .tile {
     position: relative;
-    width: 56px;
-    height: 56px;
-    border-radius: 10px;
+    width: 54px;
+    height: 54px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid rgba(15, 23, 42, 0.08);
-    background-color: #fefcf7;
+    border: 1px solid rgba(0, 0, 0, 0.2);
   }
 
   .tile.wall {
-    background-color: #3f3f46;
-    border-color: #27272a;
+    background-color: #101010;
+    border-color: #1f1f1f;
   }
 
   .coin {
     font-size: 1.1rem;
-    color: #f59e0b;
+    color: #111827;
   }
 
   .player {
@@ -328,8 +439,8 @@
     bottom: 6px;
     right: 6px;
     font-size: 1.4rem;
-    color: #2563eb;
-    text-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+    color: #f8fafc;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
   }
 
   .player[data-dir="N"] {
@@ -348,74 +459,130 @@
     transform: rotate(180deg);
   }
 
-  .panel {
+  .side {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
   }
 
-  .status,
-  .program {
-    background: #ffffff;
+  .palette,
+  .program,
+  .status {
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: 18px;
     padding: 1.5rem;
-    border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
   }
 
-  .status dl {
+  .palette-grid {
     display: grid;
-    gap: 0.75rem;
-    margin: 1rem 0 0;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
   }
 
-  .status dt {
-    font-weight: 600;
-    color: #475569;
+  .palette-button {
+    font-size: 1.1rem;
+    padding: 0.6rem 0;
+    border: 1px solid transparent;
   }
 
-  .status dd {
-    margin: 0.2rem 0 0;
-    font-size: 1.05rem;
+  .palette-button.active {
+    background: #f8fafc;
+    color: #111827;
+    border-color: #e2e8f0;
   }
 
-  .status ul {
-    margin: 0.3rem 0 0;
-    padding-left: 1.2rem;
+  .call-targets {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #cbd5f5;
+  }
+
+  .target-button {
+    padding: 0.35rem 0.8rem;
+    border-radius: 8px;
+    background: #1e293b;
+  }
+
+  .target-button.active {
+    background: #f8fafc;
+    color: #111827;
+  }
+
+  .speed {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #cbd5f5;
+    font-size: 0.9rem;
+  }
+
+  .speed input {
+    flex: 1;
+  }
+
+  .program-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .program-block {
     margin-top: 1rem;
   }
 
-  .program-block h3 {
-    margin: 0 0 0.5rem;
+  .function-title {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .slot {
+    height: 48px;
+    border-radius: 10px;
+    background: #1e293b;
+    color: #f8fafc;
+    border: 1px solid #334155;
+    font-weight: 700;
     font-size: 1rem;
   }
 
-  .program ol {
-    margin: 0;
-    padding-left: 1.2rem;
-    color: #1e293b;
+  .slot.filled {
+    background: #e2e8f0;
+    color: #0f172a;
   }
 
-  .command {
+  .status dl {
+    display: grid;
+    gap: 0.7rem;
+    margin: 1rem 0 0;
+  }
+
+  .status dt {
+    color: #94a3b8;
+  }
+
+  .status dd {
+    margin: 0.2rem 0 0;
     font-weight: 600;
   }
 
-  .target {
-    margin-left: 0.35rem;
-    color: #0f766e;
-  }
-
-  .color {
-    margin-left: 0.35rem;
-    color: #64748b;
-    font-size: 0.9rem;
-  }
-
-  @media (max-width: 900px) {
+  @media (max-width: 960px) {
     .layout {
       grid-template-columns: 1fr;
+    }
+
+    .header {
+      align-items: flex-start;
     }
   }
 </style>
