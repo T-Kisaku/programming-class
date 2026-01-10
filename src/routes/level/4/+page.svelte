@@ -31,7 +31,7 @@
     start: { x: 4, y: 3, dir: "E" },
     rules: {
       onOutOfBounds: "reset",
-      onWallCollision: "stay",
+      onWallCollision: "reset",
     },
     program: {
       entry: "F1",
