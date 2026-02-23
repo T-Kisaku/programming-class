@@ -17,7 +17,7 @@
             x,
             y,
             type: isBorder ? "wall" : "floor",
-            tileColor: isBorder ? "none" : (x + y) % 2 === 0 ? "#3b82f6" : "#22c55e",
+            tileColor: isBorder ? "none" : (x + y) % 2 === 0 ? "#93c5fd" : "#86efac",
             coin: !isBorder && ((x === 2 && y === 1) || (x === 3 && y === 2) || (x === 2 && y === 3)),
           };
         })
@@ -38,7 +38,7 @@
     capabilities: {
       availableCommands: ["MOVE_FORWARD", "TURN_LEFT", "TURN_RIGHT", "CALL"],
       callTargets: ["main", "helper"],
-      availableColors: ["none", "#3b82f6", "#22c55e", "#eab308", "#ef4444"],
+      availableColors: ["none", "#1d4ed8", "#15803d", "#a16207", "#991b1b"],
       colorRule: "allowAllOnNone",
     },
     strings: {
@@ -57,19 +57,19 @@
 
   // プログラム編集用のコマンド定義
   const availableCommands = [
-    { type: "MOVE_FORWARD", label: "直進", icon: "↑" },
-    { type: "TURN_RIGHT", label: "右90°", icon: "↻" },
-    { type: "TURN_LEFT", label: "左90°", icon: "↺" },
+    { type: "MOVE_FORWARD", label: "直進", icon: "▲" },
+    { type: "TURN_RIGHT", label: "右90°", icon: "↷" },
+    { type: "TURN_LEFT", label: "左90°", icon: "↶" },
     { type: "CALL", label: "呼出", icon: "◆" },
   ] as const;
 
-  // 色の定義
+  // 色の定義（タイルの色と対比しやすい濃い色）
   const colorOptions = [
-    { value: "none", label: "無色", color: "#9ca3af" },
-    { value: "#3b82f6", label: "青", color: "#3b82f6" },
-    { value: "#22c55e", label: "緑", color: "#22c55e" },
-    { value: "#eab308", label: "黄", color: "#eab308" },
-    { value: "#ef4444", label: "赤", color: "#ef4444" },
+    { value: "none", label: "無色", color: "#64748b" },
+    { value: "#1d4ed8", label: "青", color: "#1d4ed8" },
+    { value: "#15803d", label: "緑", color: "#15803d" },
+    { value: "#a16207", label: "黄", color: "#a16207" },
+    { value: "#991b1b", label: "赤", color: "#991b1b" },
   ] as const;
 
   // 選択中のコマンドとターゲット関数
@@ -659,8 +659,9 @@
   }
 
   .command-icon {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     line-height: 1;
+    font-weight: 900;
   }
 
   .command-label {
@@ -766,13 +767,13 @@
 
   .slots {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
     gap: 0.5rem;
   }
 
   .slot {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     border: 2px dashed #cbd5e1;
     border-radius: 8px;
     background: #f8fafc;
@@ -782,7 +783,7 @@
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
-    font-size: 1.2rem;
+    font-size: 1.6rem;
     color: #475569;
   }
 
@@ -819,7 +820,8 @@
   }
 
   .slot-icon {
-    font-weight: bold;
+    font-weight: 900;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
   }
 
   .slot-placeholder {
