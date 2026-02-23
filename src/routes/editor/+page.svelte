@@ -89,6 +89,8 @@
         }
         break;
     }
+    // Svelteのリアクティビティをトリガーするために再代入
+    gridTiles = [...gridTiles];
   };
 
   // 右クリックでコイン
@@ -96,6 +98,8 @@
     const tile = gridTiles.find((t) => t.x === x && t.y === y);
     if (tile && tile.type === "floor") {
       tile.coin = !tile.coin;
+      // Svelteのリアクティビティをトリガーするために再代入
+      gridTiles = [...gridTiles];
     }
   };
 
