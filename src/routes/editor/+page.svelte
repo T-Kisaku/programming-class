@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { LevelDefinition } from "$lib/levels/levelSchema";
   import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
 
   // URL共有モーダル
   let showShareModal = false;
@@ -56,6 +57,54 @@
 
   // マップ名
   let mapName = "My Map";
+
+  // マップデータを Session Storage に保存
+  const saveToSessionStorage = () => {
+    const level = createLevelData();
+    sessionStorage.setItem("editorMapData", JSON.stringify(level));
+  };
+
+  // マップデータを Session Storage から復元
+  const loadFromSessionStorage = () => {
+    const saved = sessionStorage.getItem("editorMapData");
+    if (saved) {
+      try {
+        const level = JSON.parse(saved) as LevelDefinition;
+        restoreFromLevelData(level);
+        sessionStorage.removeItem("editorMapData");
+        return true;
+      } catch (e) {
+        console.error("Failed to load saved data:", e);
+      }
+    }
+    return false;
+  };
+
+  // LevelDefinition からエディターの状態を復元
+  const restoreFromLevelData = (level: LevelDefinition) => {
+    mapName = level.title;
+    gridWidth = level.grid.width;
+    gridHeight = level.grid.height;
+    gridTiles = level.grid.tiles.map((tile) => ({
+      x: tile.x,
+      y: tile.y,
+      type: tile.type,
+      coin: tile.coin ?? false,
+      tileColor: tile.tileColor ?? "none",
+    }));
+    startX = level.start.x;
+    startY = level.start.y;
+    startDir = level.start.dir;
+    functions = Object.entries(level.program.functions).map(([name, config]) => ({
+      name,
+      maxSlots: config.maxSlots,
+    }));
+  };
+
+  // ページマウント時にデータを復元
+  onMount(() => {
+    loadFromSessionStorage();
+  });
 
   // グリッド初期化
   const initGrid = () => {
@@ -136,7 +185,8 @@
     const level = createLevelData();
     const json = JSON.stringify(level);
     const encoded = utf8_to_b64(json);
-    // セッションストレージにエディタに戻るためのフラグを設定
+    // セッションストレージにマップデータとエディタに戻るためのフラグを設定
+    saveToSessionStorage();
     sessionStorage.setItem("returnToEditor", "true");
     goto(`/custom?data=${encodeURIComponent(encoded)}`);
   };
