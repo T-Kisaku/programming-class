@@ -1,0 +1,113 @@
+{
+  "id": "custom-1771856158538",
+  "title": "2",
+  "grid": {
+    "width": 3,
+    "height": 3,
+    "tiles": [
+      {
+        "x": 0,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "none"
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 2,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "none"
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 2,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "none"
+      }
+    ]
+  },
+  "start": {
+    "x": 0,
+    "y": 2,
+    "dir": "E"
+  },
+  "rules": {
+    "onOutOfBounds": "reset",
+    "onWallCollision": "reset"
+  },
+  "program": {
+    "entry": "main",
+    "functions": {
+      "main": {
+        "maxSlots": 10
+      }
+    }
+  },
+  "capabilities": {
+    "availableCommands": [
+      "MOVE_FORWARD",
+      "TURN_LEFT",
+      "TURN_RIGHT"
+    ],
+    "callTargets": [
+      "main"
+    ],
+    "availableColors": [
+      "none",
+      "#3b82f6",
+      "#22c55e",
+      "#eab308",
+      "#ef4444"
+    ],
+    "colorRule": "allowAllOnNone"
+  },
+  "strings": {
+    "success": "クリア！",
+    "failExecuted": "プログラムを実行し終えました。",
+    "courseOut": "コースアウトしました"
+  }
+}

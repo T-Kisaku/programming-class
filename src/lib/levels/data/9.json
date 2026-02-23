@@ -1,0 +1,1128 @@
+{
+  "id": "custom-1771857375510",
+  "title": "9",
+  "grid": {
+    "width": 14,
+    "height": 11,
+    "tiles": [
+      {
+        "x": 0,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 2,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 3,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 4,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 5,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 6,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 7,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 8,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 9,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 10,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 11,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 12,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 13,
+        "y": 0,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 6,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 7,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 8,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 9,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 10,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 11,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 12,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 13,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 2,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 3,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 4,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 6,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 7,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 8,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 9,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 10,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 11,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 12,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 13,
+        "y": 2,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 2,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 3,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 4,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 5,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 6,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 7,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 8,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 9,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 10,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 11,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 12,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 13,
+        "y": 3,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 1,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 2,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 3,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 4,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 5,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 6,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 7,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 8,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 9,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 10,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 11,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 12,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 13,
+        "y": 4,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 6,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 7,
+        "y": 5,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "#eab308"
+      },
+      {
+        "x": 8,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 9,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 10,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 11,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 12,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 13,
+        "y": 5,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 0,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 1,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 2,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 3,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 4,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 5,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 6,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 7,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 8,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 9,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 10,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 11,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 12,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 13,
+        "y": 6,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 0,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 1,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 2,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 3,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 4,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 5,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 6,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 7,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 8,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 9,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 10,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 11,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 12,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 13,
+        "y": 7,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 0,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 1,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 2,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 3,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 4,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 5,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 6,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 7,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 8,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 9,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 10,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 11,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 12,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 13,
+        "y": 8,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 0,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 1,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 2,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 3,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 4,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 5,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 6,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 7,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 8,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 9,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 10,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 11,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 12,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#22c55e"
+      },
+      {
+        "x": 13,
+        "y": 9,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 0,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 1,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 2,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 3,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 4,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 5,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 6,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 7,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 8,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 9,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 10,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 11,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 12,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      },
+      {
+        "x": 13,
+        "y": 10,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "#ef4444"
+      }
+    ]
+  },
+  "start": {
+    "x": 7,
+    "y": 5,
+    "dir": "E"
+  },
+  "rules": {
+    "onOutOfBounds": "reset",
+    "onWallCollision": "reset"
+  },
+  "program": {
+    "entry": "f1",
+    "functions": {
+      "f1": {
+        "maxSlots": 3
+      }
+    }
+  },
+  "capabilities": {
+    "availableCommands": [
+      "MOVE_FORWARD",
+      "TURN_LEFT",
+      "TURN_RIGHT"
+    ],
+    "callTargets": [
+      "f1"
+    ],
+    "availableColors": [
+      "none",
+      "#3b82f6",
+      "#22c55e",
+      "#eab308",
+      "#ef4444"
+    ],
+    "colorRule": "allowAllOnNone"
+  },
+  "strings": {
+    "success": "クリア！",
+    "failExecuted": "プログラムを実行し終えました。",
+    "courseOut": "コースアウトしました"
+  }
+}

@@ -1,0 +1,260 @@
+{
+  "id": "custom-1771856202493",
+  "title": "3",
+  "grid": {
+    "width": 10,
+    "height": 3,
+    "tiles": [
+      {
+        "x": 0,
+        "y": 0,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 2,
+        "y": 0,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 3,
+        "y": 0,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 4,
+        "y": 0,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 5,
+        "y": 0,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 6,
+        "y": 0,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 7,
+        "y": 0,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 8,
+        "y": 0,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 9,
+        "y": 0,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 6,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 7,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 8,
+        "y": 1,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 9,
+        "y": 1,
+        "type": "floor",
+        "coin": true,
+        "tileColor": "none"
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 2,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 3,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 4,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 6,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 7,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 8,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      },
+      {
+        "x": 9,
+        "y": 2,
+        "type": "floor",
+        "coin": false,
+        "tileColor": "none"
+      }
+    ]
+  },
+  "start": {
+    "x": 0,
+    "y": 1,
+    "dir": "E"
+  },
+  "rules": {
+    "onOutOfBounds": "reset",
+    "onWallCollision": "reset"
+  },
+  "program": {
+    "entry": "function1",
+    "functions": {
+      "function1": {
+        "maxSlots": 1
+      }
+    }
+  },
+  "capabilities": {
+    "availableCommands": [
+      "MOVE_FORWARD",
+      "TURN_LEFT",
+      "TURN_RIGHT"
+    ],
+    "callTargets": [
+      "function1"
+    ],
+    "availableColors": [
+      "none",
+      "#3b82f6",
+      "#22c55e",
+      "#eab308",
+      "#ef4444"
+    ],
+    "colorRule": "allowAllOnNone"
+  },
+  "strings": {
+    "success": "クリア！",
+    "failExecuted": "プログラムを実行し終えました。",
+    "courseOut": "コースアウトしました"
+  }
+}

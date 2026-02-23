@@ -4,7 +4,7 @@
   import { goto } from "$app/navigation";
   import type { LevelDefinition } from "$lib/levels/levelSchema";
   import { createGameStateStore } from "$lib/state/gameState";
-  import levelData from "$lib/levels/data/1.json";
+  import levelData from "$lib/levels/data/3.json";
 
   const level: LevelDefinition = levelData as unknown as LevelDefinition;
 
@@ -121,7 +121,7 @@
   };
 
   const goToNextLevel = () => {
-    goto("/level/2");
+    goto("/level/4");
   };
 
   const goBack = () => {
