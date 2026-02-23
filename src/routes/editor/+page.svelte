@@ -31,21 +31,23 @@
 
   const addFunction = () => {
     const newId = functions.length + 1;
-    functions.push({ name: `func${newId}`, maxSlots: 5 });
+    functions = [...functions, { name: `func${newId}`, maxSlots: 5 }];
   };
 
   const removeFunction = (index: number) => {
     if (functions.length > 1) {
-      functions.splice(index, 1);
+      functions = functions.filter((_, i) => i !== index);
     }
   };
 
   const updateFunctionName = (index: number, name: string) => {
     functions[index].name = name;
+    functions = [...functions];
   };
 
   const updateFunctionSlots = (index: number, slots: number) => {
     functions[index].maxSlots = slots;
+    functions = [...functions];
   };
 
   // マップ名
