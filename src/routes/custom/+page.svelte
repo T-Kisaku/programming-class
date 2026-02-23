@@ -2,55 +2,18 @@
   import { onDestroy } from "svelte";
   import { get } from "svelte/store";
   import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
   import type { LevelDefinition } from "$lib/levels/levelSchema";
   import { createGameStateStore } from "$lib/state/gameState";
 
-  const level: LevelDefinition = {
-    id: "level-1",
-    title: "Level 1",
-    grid: {
-      width: 3,
-      height: 3,
-      tiles: Array.from({ length: 3 }, (_, y) =>
-        Array.from({ length: 3 }, (_, x) => ({
-          x,
-          y,
-          type: "floor",
-          tileColor: "#f8fafc",
-          coin: x === 2 && y === 1,
-        }))
-      ).flat(),
-    },
-    start: { x: 0, y: 1, dir: "E" },
-    rules: {
-      onOutOfBounds: "reset",
-      onWallCollision: "reset",
-    },
-    program: {
-      entry: "main",
-      functions: {
-        main: { maxSlots: 4 },
-      },
-    },
-    capabilities: {
-      availableCommands: ["MOVE_FORWARD", "TURN_LEFT", "TURN_RIGHT"],
-      callTargets: [],
-      availableColors: ["none"],
-      colorRule: "allowAllOnNone",
-    },
-    strings: {
-      success: "Level 1 クリア！",
-      failExecuted: "プログラムを実行し終えました。",
-      courseOut: "コースアウトしました",
-    },
-  };
-
-  const gameState = createGameStateStore(level);
+  let level: LevelDefinition | null = null;
+  let gameState: ReturnType<typeof createGameStateStore> | null = null;
+  let error = "";
 
   const coordKey = (x: number, y: number) => `${x},${y}`;
-  const tileLookup = new Map(level.grid.tiles.map((tile) => [coordKey(tile.x, tile.y), tile]));
-  const gridRows = Array.from({ length: level.grid.height }, (_, index) => index);
-  const gridCols = Array.from({ length: level.grid.width }, (_, index) => index);
+  let tileLookup: Map<string, any> = new Map();
+  let gridRows: number[] = [];
+  let gridCols: number[] = [];
 
   // プログラム編集用のコマンド定義
   const availableCommands = [
@@ -59,7 +22,6 @@
     { type: "TURN_LEFT", label: "左90°", icon: "↶" },
   ] as const;
 
-  // 選択中のコマンド
   type SelectedCommand = {
     type: (typeof availableCommands)[number]["type"];
   };
@@ -77,6 +39,7 @@
   };
 
   const setSlotCommand = (functionId: string, slotIndex: number) => {
+    if (!gameState) return;
     if (selectedCommand) {
       gameState.setCommand(functionId, slotIndex, {
         type: selectedCommand.type,
@@ -95,7 +58,7 @@
 
   let autoRun = false;
   let timer: ReturnType<typeof setInterval> | null = null;
-  let autoRunSpeed = 350; // 自動再生の速度（ミリ秒）
+  let autoRunSpeed = 350;
 
   const pauseAuto = () => {
     autoRun = false;
@@ -106,6 +69,7 @@
   };
 
   const stepOnce = () => {
+    if (!gameState) return;
     const state = get(gameState);
     if (state.runtime.status !== "running") {
       gameState.start();
@@ -118,6 +82,7 @@
       return;
     }
     autoRun = true;
+    if (!gameState) return;
     if (get(gameState).runtime.status !== "running") {
       gameState.start();
     }
@@ -128,47 +93,69 @@
 
   const stopRuntime = () => {
     pauseAuto();
+    if (!gameState) return;
     gameState.stop();
   };
 
   const resetRuntime = () => {
     pauseAuto();
+    if (!gameState) return;
     gameState.resetRuntime();
   };
 
   const clearProgram = () => {
+    if (!gameState) return;
     gameState.resetAll();
-  };
-
-  const goToNextLevel = () => {
-    // まだレベル2が存在しないのでクリア画面へ
-    goto("/clear");
   };
 
   const goBack = () => {
     goto("/");
   };
 
-  // ステータスメッセージを取得
   const getStatusMessage = (status: string, lastEvent: string | null) => {
+    if (!level) return "";
     if (lastEvent === "courseOut") return level.strings.courseOut;
     if (status === "success") return level.strings.success;
     return "";
   };
 
+  // URLからマップデータを取得
+  $: if ($page.url.searchParams.has("data")) {
+    try {
+      const data = $page.url.searchParams.get("data");
+      if (data) {
+        const json = decodeURIComponent(escape(atob(data)));
+        level = JSON.parse(json) as LevelDefinition;
+        gameState = createGameStateStore(level);
+        tileLookup = new Map(level.grid.tiles.map((tile) => [coordKey(tile.x, tile.y), tile]));
+        gridRows = Array.from({ length: level.grid.height }, (_, index) => index);
+        gridCols = Array.from({ length: level.grid.width }, (_, index) => index);
+        error = "";
+      }
+    } catch (e) {
+      error = "マップデータの読み込みに失敗しました";
+      console.error(e);
+    }
+  }
+
   $: if (
+    gameState &&
     autoRun &&
     ($gameState.runtime.status === "success" || $gameState.runtime.status === "failed")
   ) {
     pauseAuto();
   }
 
-  // コインを取得した時点で次のレベルへ
-  $: if ($gameState.runtime.lastEvent === "coin" && $gameState.runtime.collectedCoins.length === 1) {
-    pauseAuto();
-    setTimeout(() => {
-      goToNextLevel();
-    }, 500);
+  $: if (gameState && $gameState.runtime.lastEvent === "coin") {
+    const totalCoins = level?.grid.tiles.filter((t) => t.coin).length || 0;
+    if ($gameState.runtime.collectedCoins.length === totalCoins) {
+      pauseAuto();
+      setTimeout(() => {
+        if (gameState && $gameState.runtime.status !== "running") {
+          alert(level?.strings.success || "クリア！");
+        }
+      }, 500);
+    }
   }
 
   onDestroy(() => {
@@ -180,173 +167,176 @@
   <header class="header">
     <button type="button" class="back-btn" on:click={goBack}>← 戻る</button>
     <div>
-      <h1>{level.title}</h1>
+      <h1>{level?.title || "カスタムマップ"}</h1>
       <p>コマンドを選択してスロットをクリックし、プログラムを作成してください。</p>
     </div>
     <button type="button" class="editor-btn" on:click={() => goto("/editor")}>マップを作る</button>
   </header>
 
-  <section class="layout">
-    <!-- マップカード -->
-    <div class="board">
-      <div class="grid" style={`--cols: ${level.grid.width}`}>
-        {#each gridRows as y}
-          {#each gridCols as x}
-            {@const tile = tileLookup.get(coordKey(x, y))}
-            {@const isPlayer = $gameState.runtime.position.x === x && $gameState.runtime.position.y === y}
-            {@const hasCoin =
-              tile?.coin && !$gameState.runtime.collectedCoins.includes(coordKey(x, y))}
-            {@const tileBackground = tile?.tileColor === "none"
-              ? "#fefcf7"
-              : tile?.tileColor ?? "#fefcf7"}
-            <div
-              class="tile"
-              style={tileBackground ? `background-color: ${tileBackground}` : ""}
-            >
-              {#if hasCoin}
-                <span class="coin" aria-label="coin">●</span>
-              {/if}
-              {#if isPlayer}
-                <span class="player" data-dir={$gameState.runtime.position.dir} aria-label="player">
-                  ▶
-                </span>
-              {/if}
-            </div>
+  {#if error}
+    <div class="error-message">{error}</div>
+  {:else if !level}
+    <div class="error-message">マップデータが見つかりません</div>
+  {:else}
+    <section class="layout">
+      <!-- マップカード -->
+      <div class="board">
+        <div class="grid" style={`--cols: ${level.grid.width}`}>
+          {#each gridRows as y}
+            {#each gridCols as x}
+              {@const tile = tileLookup.get(coordKey(x, y))}
+              {@const isPlayer = $gameState?.runtime.position.x === x && $gameState.runtime.position.y === y}
+              {@const hasCoin =
+                tile?.coin && !$gameState?.runtime.collectedCoins.includes(coordKey(x, y))}
+              {@const tileBackground = tile?.tileColor === "none"
+                ? "#fefcf7"
+                : tile?.tileColor ?? "#fefcf7"}
+              <div
+                class="tile"
+                style={tileBackground ? `background-color: ${tileBackground}` : ""}
+              >
+                {#if hasCoin}
+                  <span class="coin" aria-label="coin">●</span>
+                {/if}
+                {#if isPlayer}
+                  <span class="player" data-dir={$gameState.runtime.position.dir} aria-label="player">
+                    ▶
+                  </span>
+                {/if}
+              </div>
+            {/each}
           {/each}
-        {/each}
+        </div>
       </div>
-    </div>
 
-    <!-- 下側のパネル -->
-    <div class="panel">
-      <!-- コントロールボタン -->
-      <section class="controls-section">
-        <div class="control-buttons">
-          <button type="button" on:click={stepOnce}>1ステップ進める</button>
-          <button type="button" on:click={startAuto} disabled={autoRun}>自動再生</button>
-          <button type="button" on:click={pauseAuto} disabled={!autoRun}>一時停止</button>
-          <button type="button" on:click={stopRuntime}>停止</button>
-          <button type="button" on:click={resetRuntime}>リセット</button>
-          <button type="button" on:click={clearProgram}>クリア</button>
-        </div>
-      </section>
-
-      <!-- 自動再生速度 -->
-      <section class="speed-section">
-        <h3>自動再生速度</h3>
-        <div class="speed-buttons">
-          {#each [100, 200, 350, 500, 750, 1000] as speed}
-            {@const isSelected = autoRunSpeed === speed}
-            <button
-              type="button"
-              class={`speed-btn ${isSelected ? "selected" : ""}`}
-              on:click={() => { autoRunSpeed = speed; }}
-              aria-label={`速度 ${speed}ms`}
-              aria-pressed={isSelected}
-            >
-              {speed}
-            </button>
-          {/each}
-        </div>
-      </section>
-
-      <!-- ステータスメッセージ -->
-      {#if getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
-        <section class="status-message-wrapper">
-          <div class="status-message {$gameState.runtime.status} {$gameState.runtime.lastEvent === "courseOut" ? "courseOut" : ""}">
-            {getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
+      <!-- 下側のパネル -->
+      <div class="panel">
+        <!-- コントロールボタン -->
+        <section class="controls-section">
+          <div class="control-buttons">
+            <button type="button" on:click={stepOnce}>1ステップ進める</button>
+            <button type="button" on:click={startAuto} disabled={autoRun}>自動再生</button>
+            <button type="button" on:click={pauseAuto} disabled={!autoRun}>一時停止</button>
+            <button type="button" on:click={stopRuntime}>停止</button>
+            <button type="button" on:click={resetRuntime}>リセット</button>
+            <button type="button" on:click={clearProgram}>クリア</button>
           </div>
         </section>
-      {/if}
 
-      <!-- プログラムパレット -->
-      <section class="program">
-        <h2>プログラム</h2>
+        <!-- 自動再生速度 -->
+        <section class="speed-section">
+          <h3>自動再生速度</h3>
+          <div class="speed-buttons">
+            {#each [100, 200, 350, 500, 750, 1000] as speed}
+              {@const isSelected = autoRunSpeed === speed}
+              <button
+                type="button"
+                class={`speed-btn ${isSelected ? "selected" : ""}`}
+                on:click={() => { autoRunSpeed = speed; }}
+                aria-label={`速度 ${speed}ms`}
+                aria-pressed={isSelected}
+              >
+                {speed}
+              </button>
+            {/each}
+          </div>
+        </section>
 
-        <!-- コマンドパレット -->
-        <div class="command-palette">
-          {#each availableCommands as cmd}
-            {@const isSelected = selectedCommand?.type === cmd.type}
+        <!-- ステータスメッセージ -->
+        {#if getStatusMessage($gameState?.runtime.status ?? "", $gameState?.runtime.lastEvent ?? null)}
+          <section class="status-message-wrapper">
+            <div class="status-message {$gameState?.runtime.status ?? ""} {$gameState?.runtime.lastEvent === "courseOut" ? "courseOut" : ""}">
+              {getStatusMessage($gameState?.runtime.status ?? "", $gameState?.runtime.lastEvent ?? null)}
+            </div>
+          </section>
+        {/if}
+
+        <!-- プログラムパレット -->
+        <section class="program">
+          <h2>プログラム</h2>
+
+          <!-- コマンドパレット -->
+          <div class="command-palette">
+            {#each availableCommands as cmd}
+              {@const isSelected = selectedCommand?.type === cmd.type}
+              <button
+                type="button"
+                class={`command-btn ${isSelected ? "selected" : ""}`}
+                on:click={() => selectCommand(cmd.type)}
+                aria-label={cmd.label}
+                aria-pressed={isSelected}
+              >
+                <span class="command-icon">{cmd.icon}</span>
+                <span class="command-label">{cmd.label}</span>
+              </button>
+            {/each}
             <button
               type="button"
-              class={`command-btn ${isSelected ? "selected" : ""}`}
-              on:click={() => selectCommand(cmd.type)}
-              aria-label={cmd.label}
-              aria-pressed={isSelected}
+              class="command-btn delete-btn"
+              on:click={() => selectCommand("delete")}
+              aria-label="コマンド削除"
             >
-              <span class="command-icon">{cmd.icon}</span>
-              <span class="command-label">{cmd.label}</span>
+              <span class="command-icon">×</span>
+              <span class="command-label">削除</span>
             </button>
-          {/each}
-          <button
-            type="button"
-            class="command-btn delete-btn"
-            on:click={() => selectCommand("delete")}
-            aria-label="コマンド削除"
-          >
-            <span class="command-icon">×</span>
-            <span class="command-label">削除</span>
-          </button>
-        </div>
-
-        <!-- 関数パレット -->
-        {#each Object.entries(level.program.functions) as [functionId, definition]}
-          <div class="function-palette">
-            <div class="function-header">
-              <h3>function {functionId}</h3>
-              <span class="max-slots">{definition.maxSlots} スロット</span>
-            </div>
-            <div class="slots">
-              {#each Array(definition.maxSlots) as _, i}
-                {@const command = $gameState.program[functionId]?.[i]}
-                {@const isHighlighted =
-                  $gameState.runtime.stack.length > 0 &&
-                  $gameState.runtime.stack[$gameState.runtime.stack.length - 1].functionId ===
-                    functionId &&
-                  $gameState.runtime.stack[$gameState.runtime.stack.length - 1].instructionIndex === i}
-                <button
-                  type="button"
-                  class={`slot ${command ? "filled" : "empty"} ${isHighlighted ? "active" : ""}`}
-                  on:click={() => setSlotCommand(functionId, i)}
-                  aria-label={`スロット ${i + 1}`}
-                >
-                  {#if command}
-                    <span class="slot-icon">{getCommandLabel(command)}</span>
-                  {:else}
-                    <span class="slot-placeholder">{i + 1}</span>
-                  {/if}
-                </button>
-              {/each}
-            </div>
           </div>
-        {/each}
-      </section>
-    </div>
-  </section>
+
+          <!-- 関数パレット -->
+          {#each Object.entries(level.program.functions) as [functionId, definition]}
+            <div class="function-palette">
+              <div class="function-header">
+                <h3>function {functionId}</h3>
+                <span class="max-slots">{definition.maxSlots} スロット</span>
+              </div>
+              <div class="slots">
+                {#each Array(definition.maxSlots) as _, i}
+                  {@const command = $gameState?.program[functionId]?.[i]}
+                  {@const isHighlighted =
+                    $gameState?.runtime.stack.length > 0 &&
+                    $gameState?.runtime.stack[$gameState.runtime.stack.length - 1].functionId ===
+                      functionId &&
+                    $gameState?.runtime.stack[$gameState.runtime.stack.length - 1].instructionIndex === i}
+                  <button
+                    type="button"
+                    class={`slot ${command ? "filled" : "empty"} ${isHighlighted ? "active" : ""}`}
+                    on:click={() => setSlotCommand(functionId, i)}
+                    aria-label={`スロット ${i + 1}`}
+                  >
+                    {#if command}
+                      <span class="slot-icon">{getCommandLabel(command)}</span>
+                    {:else}
+                      <span class="slot-placeholder">{i + 1}</span>
+                    {/if}
+                  </button>
+                {/each}
+              </div>
+            </div>
+          {/each}
+        </section>
+      </div>
+    </section>
+  {/if}
 </main>
 
 <style>
-  :global(body) {
-    background: #f7f6f3;
-    color: #1b1b1b;
-  }
-
   .page {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 2rem;
+    gap: 1rem;
+    padding: 1rem;
     font-family: "Segoe UI", system-ui, sans-serif;
+    background: #f7f6f3;
+    min-height: 100vh;
   }
 
   .header {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 1rem;
+    flex-wrap: wrap;
   }
 
   .back-btn {
-    align-self: flex-start;
     border: none;
     border-radius: 999px;
     padding: 0.5rem 1rem;
@@ -364,6 +354,7 @@
   .header h1 {
     margin: 0 0 0.25rem;
     font-size: 1.8rem;
+    flex: 1;
   }
 
   .header p {
@@ -386,22 +377,20 @@
     background: #059669;
   }
 
-  @media (max-width: 600px) {
-    .header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-
-    .editor-btn {
-      align-self: flex-start;
-    }
+  .error-message {
+    background: #fef2f2;
+    color: #dc2626;
+    padding: 1.5rem;
+    border-radius: 16px;
+    text-align: center;
+    font-weight: 600;
   }
 
   .layout {
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    flex: 1;
   }
 
   .board {
@@ -431,6 +420,11 @@
     justify-content: center;
     border: 2px solid rgba(15, 23, 42, 0.08);
     background-color: #fefcf7;
+  }
+
+  .tile.wall {
+    background-color: #3f3f46;
+    border-color: #27272a;
   }
 
   .coin {
@@ -473,22 +467,10 @@
     flex-shrink: 0;
   }
 
-  .status-message-wrapper {
-    background: #ffffff;
-    padding: 1.5rem;
-    border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
-  }
-
-  .program {
-    background: #ffffff;
-    padding: 1.5rem;
-    border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
-  }
-
   .controls-section,
-  .speed-section {
+  .speed-section,
+  .status-message-wrapper,
+  .program {
     background: #ffffff;
     padding: 1.5rem;
     border-radius: 16px;
@@ -542,26 +524,9 @@
     color: #1d4ed8;
   }
 
-  .status-message {
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    text-align: center;
-  }
-
-  .status-message.success {
-    background: #dcfce7;
-    color: #166534;
-  }
-
-  .status-message.failed {
-    background: #fef3c7;
-    color: #92400e;
-  }
-
-  .status-message.courseOut {
-    background: #fef2f2;
-    color: #dc2626;
+  .program h2 {
+    margin: 0 0 1rem;
+    font-size: 1rem;
   }
 
   .command-palette {
@@ -709,9 +674,31 @@
     color: #94a3b8;
   }
 
-  @media (max-width: 900px) {
-    .layout {
-      grid-template-columns: 1fr;
+  .status-message {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .status-message.success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .status-message.courseOut {
+    background: #fef2f2;
+    color: #dc2626;
+  }
+
+  @media (max-width: 768px) {
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .header h1 {
+      font-size: 1.4rem;
     }
   }
 </style>
