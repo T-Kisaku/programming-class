@@ -127,7 +127,7 @@
     const level = createLevelData();
     const json = JSON.stringify(level);
     const encoded = utf8_to_b64(json);
-    shareUrl = `${window.location.origin}/custom?data=${encoded}`;
+    shareUrl = `${window.location.origin}/custom?data=${encodeURIComponent(encoded)}`;
     showShareModal = true;
   };
 
@@ -374,7 +374,7 @@
           <input type="text" readonly class="share-url-input" value={shareUrl} />
           <div class="modal-actions">
             <button type="button" class="copy-btn" on:click={copyToClipboard}>コピー</button>
-            <button type="button" class="open-btn" on:click={() => goto(`/custom?data=${encodeURIComponent(shareUrl.split("?data=")[1])}`)}>
+            <button type="button" class="open-btn" on:click={() => goto(`/custom?data=${shareUrl.split("?data=")[1]}`)}>
               開く
             </button>
           </div>
