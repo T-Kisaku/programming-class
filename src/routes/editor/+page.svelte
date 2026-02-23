@@ -544,6 +544,7 @@
     border: 2px solid transparent;
     cursor: pointer;
     transition: all 0.2s;
+    background-color: var(--bg-color);
   }
 
   .color-option:hover {
