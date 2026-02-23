@@ -95,6 +95,7 @@
 
   let autoRun = false;
   let timer: ReturnType<typeof setInterval> | null = null;
+  let autoRunSpeed = 350; // 自動再生の速度（ミリ秒）
 
   const pauseAuto = () => {
     autoRun = false;
@@ -122,7 +123,7 @@
     }
     timer = setInterval(() => {
       gameState.step();
-    }, 350);
+    }, autoRunSpeed);
   };
 
   const stopRuntime = () => {
@@ -182,17 +183,10 @@
       <h1>{level.title}</h1>
       <p>コマンドを選択してスロットをクリックし、プログラムを作成してください。</p>
     </div>
-    <div class="controls">
-      <button type="button" on:click={stepOnce}>1ステップ進める</button>
-      <button type="button" on:click={startAuto} disabled={autoRun}>自動再生</button>
-      <button type="button" on:click={pauseAuto} disabled={!autoRun}>一時停止</button>
-      <button type="button" on:click={stopRuntime}>停止</button>
-      <button type="button" on:click={resetRuntime}>リセット</button>
-      <button type="button" on:click={clearProgram}>クリア</button>
-    </div>
   </header>
 
   <section class="layout">
+    <!-- マップカード -->
     <div class="board">
       <div class="grid" style={`--cols: ${level.grid.width}`}>
         {#each gridRows as y}
@@ -222,6 +216,7 @@
       </div>
     </div>
 
+    <!-- 右側のパネル -->
     <div class="panel">
       {#if getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
         <section class="status-message-wrapper">
@@ -231,6 +226,38 @@
         </section>
       {/if}
 
+      <!-- コントロールボタン -->
+      <section class="controls-section">
+        <div class="control-buttons">
+          <button type="button" on:click={stepOnce}>1ステップ進める</button>
+          <button type="button" on:click={startAuto} disabled={autoRun}>自動再生</button>
+          <button type="button" on:click={pauseAuto} disabled={!autoRun}>一時停止</button>
+          <button type="button" on:click={stopRuntime}>停止</button>
+          <button type="button" on:click={resetRuntime}>リセット</button>
+          <button type="button" on:click={clearProgram}>クリア</button>
+        </div>
+      </section>
+
+      <!-- 自動再生速度 -->
+      <section class="speed-section">
+        <h3>自動再生速度</h3>
+        <div class="speed-buttons">
+          {#each [100, 200, 350, 500, 750, 1000] as speed}
+            {@const isSelected = autoRunSpeed === speed}
+            <button
+              type="button"
+              class={`speed-btn ${isSelected ? "selected" : ""}`}
+              on:click={() => { autoRunSpeed = speed; }}
+              aria-label={`速度 ${speed}ms`}
+              aria-pressed={isSelected}
+            >
+              {speed}
+            </button>
+          {/each}
+        </div>
+      </section>
+
+      <!-- プログラムパレット -->
       <section class="program">
         <h2>プログラム</h2>
 
@@ -337,27 +364,6 @@
     font-size: 1.8rem;
   }
 
-  .controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  button {
-    border: none;
-    border-radius: 999px;
-    padding: 0.5rem 1rem;
-    background: #1f6feb;
-    color: #fff;
-    cursor: pointer;
-    font-weight: 600;
-  }
-
-  button[disabled] {
-    background: #9aa4b2;
-    cursor: not-allowed;
-  }
-
   .layout {
     display: grid;
     grid-template-columns: minmax(260px, 360px) minmax(280px, 1fr);
@@ -439,6 +445,61 @@
     padding: 1.5rem;
     border-radius: 16px;
     box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+  }
+
+  .controls-section,
+  .speed-section {
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+  }
+
+  .control-buttons,
+  .speed-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .control-buttons button,
+  .speed-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    background: #1f6feb;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .control-buttons button:hover,
+  .speed-btn:hover:not(:disabled) {
+    background: #1a5fd8;
+  }
+
+  .control-buttons button[disabled],
+  .speed-btn[disabled] {
+    background: #9aa4b2;
+    cursor: not-allowed;
+  }
+
+  .speed-section h3 {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .speed-btn {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .speed-btn.selected {
+    background: #dbeafe;
+    color: #1d4ed8;
   }
 
   .status-message {
