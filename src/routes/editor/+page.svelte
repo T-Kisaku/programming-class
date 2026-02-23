@@ -2,6 +2,10 @@
   import type { LevelDefinition } from "$lib/levels/levelSchema";
   import { goto } from "$app/navigation";
 
+  // URL共有モーダル
+  let showShareModal = false;
+  let shareUrl = "";
+
   // エディタの状態
   let gridWidth = 5;
   let gridHeight = 5;
@@ -107,42 +111,7 @@
 
   // マップをJSONとしてエクスポート
   const exportMap = () => {
-    const level: LevelDefinition = {
-      id: "custom-" + Date.now(),
-      title: mapName,
-      grid: {
-        width: gridWidth,
-        height: gridHeight,
-        tiles: gridTiles.map((tile) => ({
-          x: tile.x,
-          y: tile.y,
-          type: tile.type,
-          coin: tile.coin,
-          tileColor: tile.tileColor,
-        })),
-      },
-      start: { x: startX, y: startY, dir: startDir },
-      rules: {
-        onOutOfBounds: "reset",
-        onWallCollision: "reset",
-      },
-      program: {
-        entry: functions[0].name,
-        functions: Object.fromEntries(functions.map((f) => [f.name, { maxSlots: f.maxSlots }])),
-      },
-      capabilities: {
-        availableCommands: ["MOVE_FORWARD", "TURN_LEFT", "TURN_RIGHT"],
-        callTargets: functions.map((f) => f.name),
-        availableColors: ["none", ...tileColors.map((c) => c.value).filter((c) => c !== "none")],
-        colorRule: "allowAllOnNone",
-      },
-      strings: {
-        success: "クリア！",
-        failExecuted: "プログラムを実行し終えました。",
-        courseOut: "コースアウトしました",
-      },
-    };
-
+    const level = createLevelData();
     const json = JSON.stringify(level, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -155,7 +124,40 @@
 
   // マップをURLで共有
   const shareMap = () => {
-    const level: LevelDefinition = {
+    const level = createLevelData();
+    const json = JSON.stringify(level);
+    const encoded = utf8_to_b64(json);
+    shareUrl = `${window.location.origin}/custom?data=${encoded}`;
+    showShareModal = true;
+  };
+
+  // マップを作成してテストプレイ
+  const testPlay = () => {
+    const level = createLevelData();
+    const json = JSON.stringify(level);
+    const encoded = utf8_to_b64(json);
+    // セッションストレージにエディタに戻るためのフラグを設定
+    sessionStorage.setItem("returnToEditor", "true");
+    goto(`/custom?data=${encodeURIComponent(encoded)}`);
+  };
+
+  const goBack = () => {
+    goto("/");
+  };
+
+  // UTF-8対応のBase64エンコード
+  const utf8_to_b64 = (str: string): string => {
+    try {
+      return window.btoa(unescape(encodeURIComponent(str)));
+    } catch (e) {
+      console.error("Base64 encoding error:", e);
+      return "";
+    }
+  };
+
+  // マップデータを生成
+  const createLevelData = (): LevelDefinition => {
+    return {
       id: "custom-" + Date.now(),
       title: mapName,
       grid: {
@@ -190,59 +192,11 @@
         courseOut: "コースアウトしました",
       },
     };
-
-    const json = JSON.stringify(level);
-    const encoded = btoa(unescape(encodeURIComponent(json)));
-    goto(`/custom?data=${encoded}`);
   };
 
-  // マップを作成してテストプレイ
-  const testPlay = () => {
-    const level: LevelDefinition = {
-      id: "test-" + Date.now(),
-      title: mapName,
-      grid: {
-        width: gridWidth,
-        height: gridHeight,
-        tiles: gridTiles.map((tile) => ({
-          x: tile.x,
-          y: tile.y,
-          type: tile.type,
-          coin: tile.coin,
-          tileColor: tile.tileColor,
-        })),
-      },
-      start: { x: startX, y: startY, dir: startDir },
-      rules: {
-        onOutOfBounds: "reset",
-        onWallCollision: "reset",
-      },
-      program: {
-        entry: functions[0].name,
-        functions: Object.fromEntries(functions.map((f) => [f.name, { maxSlots: f.maxSlots }])),
-      },
-      capabilities: {
-        availableCommands: ["MOVE_FORWARD", "TURN_LEFT", "TURN_RIGHT"],
-        callTargets: functions.map((f) => f.name),
-        availableColors: ["none", ...tileColors.map((c) => c.value).filter((c) => c !== "none")],
-        colorRule: "allowAllOnNone",
-      },
-      strings: {
-        success: "クリア！",
-        failExecuted: "プログラムを実行し終えました。",
-        courseOut: "コースアウトしました",
-      },
-    };
-
-    const json = JSON.stringify(level);
-    const encoded = btoa(unescape(encodeURIComponent(json)));
-    // セッションストレージにエディタに戻るためのフラグを設定
-    sessionStorage.setItem("returnToEditor", "true");
-    goto(`/custom?data=${encoded}`);
-  };
-
-  const goBack = () => {
-    goto("/");
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shareUrl);
+    alert("URLをクリップボードにコピーしました！");
   };
 </script>
 
@@ -407,6 +361,27 @@
       </div>
     </div>
   </section>
+
+  {#if showShareModal}
+    <div class="modal-overlay" on:click={() => showShareModal = false}>
+      <div class="modal-content" on:click|stopPropagation>
+        <div class="modal-header">
+          <h2>URLで共有</h2>
+          <button type="button" class="modal-close" on:click={() => showShareModal = false}>×</button>
+        </div>
+        <div class="modal-body">
+          <p>このURLをコピーして共有してください：</p>
+          <input type="text" readonly class="share-url-input" value={shareUrl} />
+          <div class="modal-actions">
+            <button type="button" class="copy-btn" on:click={copyToClipboard}>コピー</button>
+            <button type="button" class="open-btn" on:click={() => goto(`/custom?data=${encodeURIComponent(shareUrl.split("?data=")[1])}`)}>
+              開く
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {/if}
 </main>
 
 <style>
@@ -824,6 +799,119 @@
   .coin-marker {
     font-size: 1.3rem;
     color: #f59e0b;
+  }
+
+  /* Modal styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-content {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #1e293b;
+  }
+
+  .modal-close {
+    border: none;
+    background: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #64748b;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-close:hover {
+    color: #1e293b;
+  }
+
+  .modal-body {
+    p {
+      margin: 0 0 0.75rem;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+  }
+
+  .share-url-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: monospace;
+    background: #f8fafc;
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+  }
+
+  .share-url-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .copy-btn,
+  .open-btn {
+    flex: 1;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn {
+    background: #3b82f6;
+    color: #fff;
+  }
+
+  .copy-btn:hover {
+    background: #2563eb;
+  }
+
+  .open-btn {
+    background: #10b981;
+    color: #fff;
+  }
+
+  .open-btn:hover {
+    background: #059669;
   }
 
   @media (max-width: 768px) {

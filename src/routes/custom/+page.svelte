@@ -137,12 +137,24 @@
     return "";
   };
 
+  // UTF-8対応のBase64デコード
+  const b64_to_utf8 = (str: string): string => {
+    try {
+      return decodeURIComponent(escape(window.atob(str)));
+    } catch (e) {
+      console.error("Base64 decoding error:", e);
+      return "";
+    }
+  };
+
   // URLからマップデータを取得
   $: if ($page.url.searchParams.has("data")) {
     try {
-      const data = $page.url.searchParams.get("data");
+      let data = $page.url.searchParams.get("data");
       if (data) {
-        const json = decodeURIComponent(escape(atob(data)));
+        // URLエンコードされている場合はデコード
+        data = decodeURIComponent(data);
+        const json = b64_to_utf8(data);
         level = JSON.parse(json) as LevelDefinition;
         gameState = createGameStateStore(level);
         tileLookup = new Map(level.grid.tiles.map((tile) => [coordKey(tile.x, tile.y), tile]));
@@ -154,7 +166,7 @@
       }
     } catch (e) {
       error = "マップデータの読み込みに失敗しました";
-      console.error(e);
+      console.error("Decoding error:", e);
     }
   }
 
