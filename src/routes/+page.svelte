@@ -17,7 +17,7 @@
             x,
             y,
             type: isBorder ? "wall" : "floor",
-            tileColor: isBorder ? "none" : (x + y) % 2 === 0 ? "#cce7ff" : "#dff7d2",
+            tileColor: isBorder ? "none" : (x + y) % 2 === 0 ? "#3b82f6" : "#22c55e",
             coin: !isBorder && ((x === 2 && y === 1) || (x === 3 && y === 2) || (x === 2 && y === 3)),
           };
         })
@@ -38,7 +38,7 @@
     capabilities: {
       availableCommands: ["MOVE_FORWARD", "TURN_LEFT", "TURN_RIGHT", "CALL"],
       callTargets: ["main", "helper"],
-      availableColors: ["none", "#cce7ff", "#dff7d2"],
+      availableColors: ["none", "#3b82f6", "#22c55e", "#eab308", "#ef4444"],
       colorRule: "allowAllOnNone",
     },
     strings: {
@@ -63,19 +63,37 @@
     { type: "CALL", label: "呼出", icon: "◆" },
   ] as const;
 
+  // 色の定義
+  const colorOptions = [
+    { value: "none", label: "無色", color: "#9ca3af" },
+    { value: "#3b82f6", label: "青", color: "#3b82f6" },
+    { value: "#22c55e", label: "緑", color: "#22c55e" },
+    { value: "#eab308", label: "黄", color: "#eab308" },
+    { value: "#ef4444", label: "赤", color: "#ef4444" },
+  ] as const;
+
   // 選択中のコマンドとターゲット関数
   type SelectedCommand = {
     type: (typeof availableCommands)[number]["type"];
     target?: string;
+    color: string;
   };
 
   let selectedCommand: SelectedCommand | null = null;
 
-  const selectCommand = (type: (typeof availableCommands)[number]["type"]) => {
-    if (selectedCommand?.type === type) {
+  const selectCommand = (type: (typeof availableCommands)[number]["type"] | "delete") => {
+    if (type === "delete") {
+      selectedCommand = null;
+    } else if (selectedCommand?.type === type) {
       selectedCommand = null;
     } else {
-      selectedCommand = { type };
+      selectedCommand = { type, color: "none" };
+    }
+  };
+
+  const selectCommandColor = (color: string) => {
+    if (selectedCommand) {
+      selectedCommand.color = color;
     }
   };
 
@@ -89,7 +107,7 @@
     if (selectedCommand) {
       gameState.setCommand(functionId, slotIndex, {
         type: selectedCommand.type,
-        color: "none",
+        color: selectedCommand.color,
         target: selectedCommand.type === "CALL" ? selectedCommand.target : undefined,
       });
     } else {
@@ -97,13 +115,19 @@
     }
   };
 
-  const getCommandLabel = (command: { type: string; target?: string } | null) => {
+  const getCommandLabel = (command: { type: string; color: string; target?: string } | null) => {
     if (!command) return "";
     if (command.type === "CALL") {
       return `◆${command.target}`;
     }
     const cmd = availableCommands.find((c) => c.type === command.type);
     return cmd ? cmd.icon : "";
+  };
+
+  const getCommandColor = (command: { type: string; color: string } | null) => {
+    if (!command) return "";
+    const colorOption = colorOptions.find((c) => c.value === command.color);
+    return colorOption?.color || command.color;
   };
 
   // 利用可能なターゲット関数（自分以外の関数）
@@ -287,7 +311,39 @@
               <span class="command-label">{cmd.label}</span>
             </button>
           {/each}
+          <button
+            type="button"
+            class="command-btn delete-btn"
+            on:click={() => selectCommand("delete")}
+            aria-label="コマンド削除"
+          >
+            <span class="command-icon">×</span>
+            <span class="command-label">削除</span>
+          </button>
         </div>
+
+        <!-- 色選択パレット（コマンド選択時のみ表示） -->
+        {#if selectedCommand}
+          <div class="color-palette">
+            <h4>命令の色</h4>
+            <div class="color-buttons">
+              {#each colorOptions as color}
+                {@const isColorSelected = selectedCommand?.color === color.value}
+                <button
+                  type="button"
+                  class={`color-btn ${isColorSelected ? "selected" : ""}`}
+                  on:click={() => selectCommandColor(color.value)}
+                  aria-label={color.label}
+                  aria-pressed={isColorSelected}
+                  style={`--color: ${color.color}`}
+                >
+                  <span class="color-swatch"></span>
+                  <span class="color-label">{color.label}</span>
+                </button>
+              {/each}
+            </div>
+          </div>
+        {/if}
 
         <!-- ターゲット関数選択パレット（CALL選択時のみ表示） -->
         {#if selectedCommand?.type === "CALL"}
@@ -320,6 +376,7 @@
             <div class="slots">
               {#each Array(definition.maxSlots) as _, i}
                 {@const command = $gameState.program[functionId]?.[i]}
+                {@const commandColor = command ? getCommandColor(command) : null}
                 {@const isHighlighted =
                   $gameState.runtime.stack.length > 0 &&
                   $gameState.runtime.stack[$gameState.runtime.stack.length - 1].functionId ===
@@ -330,6 +387,7 @@
                   class={`slot ${command ? "filled" : "empty"} ${isHighlighted ? "active" : ""}`}
                   on:click={() => setSlotCommand(functionId, i)}
                   aria-label={`スロット ${i + 1}`}
+                  style={commandColor && commandColor !== "#9ca3af" ? `--command-color: ${commandColor}` : ""}
                 >
                   {#if command}
                     <span class="slot-icon">{getCommandLabel(command)}</span>
@@ -609,6 +667,81 @@
     font-weight: 500;
   }
 
+  .command-btn.delete-btn {
+    color: #dc2626;
+  }
+
+  .command-btn.delete-btn:hover:not(:disabled) {
+    background: #fef2f2;
+    border-color: #fca5a5;
+  }
+
+  .command-btn.delete-btn.selected {
+    background: #fee2e2;
+    border-color: #dc2626;
+    color: #991b1b;
+  }
+
+  /* 色選択パレット */
+  .color-palette {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+  }
+
+  .color-palette h4 {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .color-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .color-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .color-btn:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+  }
+
+  .color-btn.selected {
+    border-color: var(--color);
+    background: #f0f9ff;
+  }
+
+  .color-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: var(--color);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .color-label {
+    font-size: 0.85rem;
+  }
+
   /* 関数パレット */
   .function-palette {
     margin-top: 1rem;
@@ -662,6 +795,11 @@
     border-style: solid;
     border-color: #94a3b8;
     background: #fff;
+  }
+
+  .slot.filled[style*="--command-color"] {
+    border-color: var(--command-color);
+    background: color-mix(in srgb, var(--command-color) 15%, #fff);
   }
 
   .slot.filled:hover {
