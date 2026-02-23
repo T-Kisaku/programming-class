@@ -9,6 +9,7 @@
   let level: LevelDefinition | null = null;
   let gameState: ReturnType<typeof createGameStateStore> | null = null;
   let error = "";
+  let returnToEditor = false;
 
   const coordKey = (x: number, y: number) => `${x},${y}`;
   let tileLookup: Map<string, any> = new Map();
@@ -68,12 +69,6 @@
     return cmd ? cmd.icon : "";
   };
 
-  const getCommandLabel = (command: { type: string } | null) => {
-    if (!command) return "";
-    const cmd = availableCommands.find((c) => c.type === command.type);
-    return cmd ? cmd.icon : "";
-  };
-
   let autoRun = false;
   let timer: ReturnType<typeof setInterval> | null = null;
   let autoRunSpeed = 350;
@@ -127,7 +122,12 @@
   };
 
   const goBack = () => {
-    goto("/");
+    if (returnToEditor) {
+      sessionStorage.removeItem("returnToEditor");
+      goto("/editor");
+    } else {
+      goto("/");
+    }
   };
 
   const getStatusMessage = (status: string, lastEvent: string | null) => {
@@ -149,6 +149,8 @@
         gridRows = Array.from({ length: level.grid.height }, (_, index) => index);
         gridCols = Array.from({ length: level.grid.width }, (_, index) => index);
         error = "";
+        // エディタから来たかチェック
+        returnToEditor = sessionStorage.getItem("returnToEditor") === "true";
       }
     } catch (e) {
       error = "マップデータの読み込みに失敗しました";
@@ -183,12 +185,16 @@
 
 <main class="page">
   <header class="header">
-    <button type="button" class="back-btn" on:click={goBack}>← 戻る</button>
+    <button type="button" class="back-btn" on:click={goBack}>
+      {returnToEditor ? "← エディタに戻る" : "← 戻る"}
+    </button>
     <div>
       <h1>{level?.title || "カスタムマップ"}</h1>
       <p>コマンドを選択してスロットをクリックし、プログラムを作成してください。</p>
     </div>
-    <button type="button" class="editor-btn" on:click={() => goto("/editor")}>マップを作る</button>
+    {#if !returnToEditor}
+      <button type="button" class="editor-btn" on:click={() => goto("/editor")}>マップを作る</button>
+    {/if}
   </header>
 
   {#if error}

@@ -196,6 +196,51 @@
     goto(`/custom?data=${encoded}`);
   };
 
+  // マップを作成してテストプレイ
+  const testPlay = () => {
+    const level: LevelDefinition = {
+      id: "test-" + Date.now(),
+      title: mapName,
+      grid: {
+        width: gridWidth,
+        height: gridHeight,
+        tiles: gridTiles.map((tile) => ({
+          x: tile.x,
+          y: tile.y,
+          type: tile.type,
+          coin: tile.coin,
+          tileColor: tile.tileColor,
+        })),
+      },
+      start: { x: startX, y: startY, dir: startDir },
+      rules: {
+        onOutOfBounds: "reset",
+        onWallCollision: "reset",
+      },
+      program: {
+        entry: functions[0].name,
+        functions: Object.fromEntries(functions.map((f) => [f.name, { maxSlots: f.maxSlots }])),
+      },
+      capabilities: {
+        availableCommands: ["MOVE_FORWARD", "TURN_LEFT", "TURN_RIGHT"],
+        callTargets: functions.map((f) => f.name),
+        availableColors: ["none", ...tileColors.map((c) => c.value).filter((c) => c !== "none")],
+        colorRule: "allowAllOnNone",
+      },
+      strings: {
+        success: "クリア！",
+        failExecuted: "プログラムを実行し終えました。",
+        courseOut: "コースアウトしました",
+      },
+    };
+
+    const json = JSON.stringify(level);
+    const encoded = btoa(unescape(encodeURIComponent(json)));
+    // セッションストレージにエディタに戻るためのフラグを設定
+    sessionStorage.setItem("returnToEditor", "true");
+    goto(`/custom?data=${encoded}`);
+  };
+
   const goBack = () => {
     goto("/");
   };
@@ -328,6 +373,7 @@
       <div class="divider"></div>
 
       <div class="action-buttons">
+        <button type="button" class="test-play-btn" on:click={testPlay}>テストプレイ</button>
         <button type="button" class="export-btn" on:click={exportMap}>JSONダウンロード</button>
         <button type="button" class="share-btn" on:click={shareMap}>URLで共有</button>
       </div>
@@ -645,7 +691,8 @@
   }
 
   .export-btn,
-  .share-btn {
+  .share-btn,
+  .test-play-btn {
     border: none;
     border-radius: 999px;
     padding: 0.8rem 1.5rem;
@@ -653,6 +700,15 @@
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s;
+  }
+
+  .test-play-btn {
+    background: #8b5cf6;
+    color: #fff;
+  }
+
+  .test-play-btn:hover {
+    background: #7c3aed;
   }
 
   .export-btn {
