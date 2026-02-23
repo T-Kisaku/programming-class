@@ -152,8 +152,6 @@
   const getStatusMessage = (status: string, lastEvent: string | null) => {
     if (lastEvent === "courseOut") return level.strings.courseOut;
     if (status === "success") return level.strings.success;
-    if (status === "failed") return level.strings.failExecuted;
-    if (status === "idle") return "待機中";
     return "";
   };
 
@@ -225,32 +223,13 @@
     </div>
 
     <div class="panel">
-      <section class="status">
-        <h2>ステータス</h2>
-        {#if getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
+      {#if getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
+        <section class="status-message-wrapper">
           <div class="status-message {$gameState.runtime.status} {$gameState.runtime.lastEvent === "courseOut" ? "courseOut" : ""}">
             {getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
           </div>
-        {/if}
-        <dl>
-          <div>
-            <dt>状態</dt>
-            <dd>{$gameState.runtime.status}</dd>
-          </div>
-          <div>
-            <dt>イベント</dt>
-            <dd>{$gameState.runtime.lastEvent ?? "-"}</dd>
-          </div>
-          <div>
-            <dt>歩数</dt>
-            <dd>{$gameState.runtime.steps}</dd>
-          </div>
-          <div>
-            <dt>取得コイン</dt>
-            <dd>{$gameState.runtime.collectedCoins.length} / 1</dd>
-          </div>
-        </dl>
-      </section>
+        </section>
+      {/if}
 
       <section class="program">
         <h2>プログラム</h2>
@@ -448,7 +427,13 @@
     gap: 1.5rem;
   }
 
-  .status,
+  .status-message-wrapper {
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+  }
+
   .program {
     background: #ffffff;
     padding: 1.5rem;
@@ -456,28 +441,11 @@
     box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
   }
 
-  .status dl {
-    display: grid;
-    gap: 0.75rem;
-    margin: 1rem 0 0;
-  }
-
-  .status dt {
-    font-weight: 600;
-    color: #475569;
-  }
-
-  .status dd {
-    margin: 0.2rem 0 0;
-    font-size: 1.05rem;
-  }
-
   .status-message {
     padding: 0.75rem 1rem;
     border-radius: 8px;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 1rem;
   }
 
   .status-message.success {
@@ -488,11 +456,6 @@
   .status-message.failed {
     background: #fef3c7;
     color: #92400e;
-  }
-
-  .status-message.idle {
-    background: #f1f5f9;
-    color: #475569;
   }
 
   .status-message.courseOut {
