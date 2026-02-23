@@ -216,16 +216,8 @@
       </div>
     </div>
 
-    <!-- 右側のパネル -->
+    <!-- 下側のパネル -->
     <div class="panel">
-      {#if getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
-        <section class="status-message-wrapper">
-          <div class="status-message {$gameState.runtime.status} {$gameState.runtime.lastEvent === "courseOut" ? "courseOut" : ""}">
-            {getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
-          </div>
-        </section>
-      {/if}
-
       <!-- コントロールボタン -->
       <section class="controls-section">
         <div class="control-buttons">
@@ -256,6 +248,15 @@
           {/each}
         </div>
       </section>
+
+      <!-- ステータスメッセージ -->
+      {#if getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
+        <section class="status-message-wrapper">
+          <div class="status-message {$gameState.runtime.status} {$gameState.runtime.lastEvent === "courseOut" ? "courseOut" : ""}">
+            {getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
+          </div>
+        </section>
+      {/if}
 
       <!-- プログラムパレット -->
       <section class="program">
@@ -365,10 +366,9 @@
   }
 
   .layout {
-    display: grid;
-    grid-template-columns: minmax(260px, 360px) minmax(280px, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
-    align-items: start;
   }
 
   .board {
@@ -376,6 +376,8 @@
     padding: 1.5rem;
     border-radius: 16px;
     box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+    flex: 1;
+    min-height: 400px;
   }
 
   .grid {
@@ -383,6 +385,7 @@
     grid-template-columns: repeat(var(--cols), 72px);
     gap: 6px;
     justify-content: center;
+    place-items: center;
   }
 
   .tile {
@@ -431,6 +434,10 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+  }
+
+  .panel section {
+    flex-shrink: 0;
   }
 
   .status-message-wrapper {
