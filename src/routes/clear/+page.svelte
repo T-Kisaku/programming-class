@@ -1,18 +1,17 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
 
-  const startGame = () => {
-    goto("/level/1");
+  const goHome = () => {
+    goto("/");
   };
 </script>
 
 <main class="page">
   <div class="content">
-    <h1 class="title">プログラミングゲーム</h1>
-    <p class="description">
-      コマンドを選択して、キャラクターを操作し、すべてのコインを集めよう！
-    </p>
-    <button type="button" class="start-btn" on:click={startGame}>ゲームを開始</button>
+    <div class="icon">🎉</div>
+    <h1 class="title">おめでとうございます！</h1>
+    <p class="description">すべてのレベルをクリアしました！</p>
+    <button type="button" class="home-btn" on:click={goHome}>ホームに戻る</button>
   </div>
 </main>
 
@@ -36,6 +35,11 @@
     max-width: 500px;
   }
 
+  .icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+  }
+
   .title {
     margin: 0 0 1rem;
     font-size: 2.5rem;
@@ -45,12 +49,12 @@
 
   .description {
     margin: 0 0 2rem;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: #64748b;
     line-height: 1.6;
   }
 
-  .start-btn {
+  .home-btn {
     border: none;
     border-radius: 999px;
     padding: 1rem 3rem;
@@ -63,12 +67,12 @@
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
   }
 
-  .start-btn:hover {
+  .home-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
   }
 
-  .start-btn:active {
+  .home-btn:active {
     transform: translateY(0);
   }
 </style>
