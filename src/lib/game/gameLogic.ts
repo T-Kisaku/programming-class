@@ -77,19 +77,6 @@ export const stopRuntimeState = (level: LevelDefinition): RuntimeState => ({
   lastEvent: "stopped",
 });
 
-const resetRuntime = (level: LevelDefinition, status: RuntimeStatus): RuntimeState => ({
-  position: {
-    x: level.start.x,
-    y: level.start.y,
-    dir: level.start.dir,
-  },
-  collectedCoins: [],
-  stack: status === "running" ? [{ functionId: level.program.entry, instructionIndex: 0 }] : [],
-  steps: 0,
-  status,
-  lastEvent: "reset",
-});
-
 const rotateLeft = (dir: Direction): Direction => {
   switch (dir) {
     case "N":
@@ -289,13 +276,21 @@ export const stepRuntimeState = (
       const nextY = runtime.position.y + dy;
 
       if (nextX < 0 || nextY < 0 || nextX >= level.grid.width || nextY >= level.grid.height) {
-        return resetRuntime(level, runtime.status);
+        return {
+          ...createIdleRuntimeState(level),
+          lastEvent: "courseOut",
+          status: "failed",
+        };
       }
 
       const nextTile = levelRuntime.tileLookup.get(coordKey(nextX, nextY));
       if (!nextTile || nextTile.type === "wall") {
         if (level.rules.onWallCollision === "reset") {
-          return resetRuntime(level, runtime.status);
+          return {
+            ...createIdleRuntimeState(level),
+            lastEvent: "courseOut",
+            status: "failed",
+          };
         }
 
         const nextStack = stack.map((frame, index) =>

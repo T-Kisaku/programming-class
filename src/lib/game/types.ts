@@ -31,6 +31,7 @@ export type RuntimeEvent =
   | "coin"
   | "blocked"
   | "reset"
+  | "courseOut"
   | "success"
   | "failed";
 

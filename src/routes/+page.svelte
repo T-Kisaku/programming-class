@@ -26,7 +26,7 @@
     start: { x: 1, y: 1, dir: "E" },
     rules: {
       onOutOfBounds: "reset",
-      onWallCollision: "stay",
+      onWallCollision: "reset",
     },
     program: {
       entry: "main",
@@ -43,7 +43,8 @@
     },
     strings: {
       success: "全てのコインを集めました！",
-      failExecuted: "コインを取り切れませんでした。",
+      failExecuted: "プログラムを実行し終えました。",
+      courseOut: "コースアウトしました",
     },
   };
 
@@ -112,6 +113,15 @@
 
   const clearProgram = () => {
     gameState.resetAll();
+  };
+
+  // ステータスメッセージを取得
+  const getStatusMessage = (status: string, lastEvent: string | null) => {
+    if (lastEvent === "courseOut") return level.strings.courseOut;
+    if (status === "success") return level.strings.success;
+    if (status === "failed") return level.strings.failExecuted;
+    if (status === "idle") return "待機中";
+    return "";
   };
 
   let autoRun = false;
@@ -220,6 +230,11 @@
     <div class="panel">
       <section class="status">
         <h2>ステータス</h2>
+        {#if getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
+          <div class="status-message {$gameState.runtime.status} {$gameState.runtime.lastEvent === "courseOut" ? "courseOut" : ""}">
+            {getStatusMessage($gameState.runtime.status, $gameState.runtime.lastEvent)}
+          </div>
+        {/if}
         <dl>
           <div>
             <dt>状態</dt>
@@ -463,6 +478,34 @@
     display: grid;
     gap: 0.75rem;
     margin: 1rem 0 0;
+  }
+
+  .status-message {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .status-message.success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .status-message.failed {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .status-message.idle {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  .status-message.courseOut {
+    background: #fef2f2;
+    color: #dc2626;
   }
 
   .status dt {
