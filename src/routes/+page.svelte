@@ -23,10 +23,6 @@
   const goToEditor = () => {
     goto("/editor");
   };
-
-  const playCustom = () => {
-    goto("/custom");
-  };
 </script>
 
 <main class="page">
@@ -65,10 +61,6 @@
         <button type="button" class="custom-btn editor" on:click={goToEditor}>
           <span class="btn-icon">✏️</span>
           <span>マップを作る</span>
-        </button>
-        <button type="button" class="custom-btn play" on:click={playCustom}>
-          <span class="btn-icon">🎮</span>
-          <span>URLからプレイ</span>
         </button>
       </div>
     </div>
@@ -212,17 +204,6 @@
     background: #059669;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  }
-
-  .custom-btn.play {
-    background: #8b5cf6;
-    color: #fff;
-  }
-
-  .custom-btn.play:hover {
-    background: #7c3aed;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
   }
 
   .btn-icon {
