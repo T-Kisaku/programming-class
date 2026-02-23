@@ -2,7 +2,6 @@
   import { onDestroy } from "svelte";
   import { get } from "svelte/store";
   import type { LevelDefinition } from "$lib/levels/levelSchema";
-  import type { Program } from "$lib/game/types";
   import { createGameStateStore } from "$lib/state/gameState";
 
   const level: LevelDefinition = {
@@ -48,29 +47,72 @@
     },
   };
 
-  const testProgram: Program = {
-    main: [
-      { type: "MOVE_FORWARD", color: "none" },
-      { type: "MOVE_FORWARD", color: "none" },
-      { type: "TURN_RIGHT", color: "none" },
-      { type: "MOVE_FORWARD", color: "none" },
-      { type: "CALL", color: "none", target: "helper" },
-    ],
-    helper: [
-      { type: "TURN_RIGHT", color: "none" },
-      { type: "MOVE_FORWARD", color: "none" },
-      { type: "TURN_LEFT", color: "none" },
-      { type: "MOVE_FORWARD", color: "none" },
-    ],
-  };
-
   const gameState = createGameStateStore(level);
-  gameState.setProgram(testProgram);
 
   const coordKey = (x: number, y: number) => `${x},${y}`;
   const tileLookup = new Map(level.grid.tiles.map((tile) => [coordKey(tile.x, tile.y), tile]));
   const gridRows = Array.from({ length: level.grid.height }, (_, index) => index);
   const gridCols = Array.from({ length: level.grid.width }, (_, index) => index);
+
+  // プログラム編集用のコマンド定義
+  const availableCommands = [
+    { type: "MOVE_FORWARD", label: "直進", icon: "↑" },
+    { type: "TURN_RIGHT", label: "右90°", icon: "↻" },
+    { type: "TURN_LEFT", label: "左90°", icon: "↺" },
+    { type: "CALL", label: "呼出", icon: "◆" },
+  ] as const;
+
+  // 選択中のコマンドとターゲット関数
+  type SelectedCommand = {
+    type: (typeof availableCommands)[number]["type"];
+    target?: string;
+  };
+
+  let selectedCommand: SelectedCommand | null = null;
+
+  const selectCommand = (type: (typeof availableCommands)[number]["type"]) => {
+    if (selectedCommand?.type === type) {
+      selectedCommand = null;
+    } else {
+      selectedCommand = { type };
+    }
+  };
+
+  const selectCallTarget = (target: string) => {
+    if (selectedCommand?.type === "CALL") {
+      selectedCommand.target = target;
+    }
+  };
+
+  const setSlotCommand = (functionId: string, slotIndex: number) => {
+    if (selectedCommand) {
+      gameState.setCommand(functionId, slotIndex, {
+        type: selectedCommand.type,
+        color: "none",
+        target: selectedCommand.type === "CALL" ? selectedCommand.target : undefined,
+      });
+    } else {
+      gameState.setCommand(functionId, slotIndex, null);
+    }
+  };
+
+  const getCommandLabel = (command: { type: string; target?: string } | null) => {
+    if (!command) return "";
+    if (command.type === "CALL") {
+      return `◆${command.target}`;
+    }
+    const cmd = availableCommands.find((c) => c.type === command.type);
+    return cmd ? cmd.icon : "";
+  };
+
+  // 利用可能なターゲット関数（自分以外の関数）
+  const getAvailableTargets = (functionId: string) => {
+    return level.capabilities.callTargets.filter((target) => target !== functionId);
+  };
+
+  const clearProgram = () => {
+    gameState.resetAll();
+  };
 
   let autoRun = false;
   let timer: ReturnType<typeof setInterval> | null = null;
@@ -130,7 +172,7 @@
   <header class="header">
     <div>
       <h1>{level.title}</h1>
-      <p>ゲームロジックのテスト用UIです。プログラムは固定です。</p>
+      <p>コマンドを選択してスロットをクリックし、プログラムを作成してください。</p>
     </div>
     <div class="controls">
       <button type="button" on:click={stepOnce}>1ステップ進める</button>
@@ -138,6 +180,7 @@
       <button type="button" on:click={pauseAuto} disabled={!autoRun}>一時停止</button>
       <button type="button" on:click={stopRuntime}>停止</button>
       <button type="button" on:click={resetRuntime}>リセット</button>
+      <button type="button" on:click={clearProgram}>クリア</button>
     </div>
   </header>
 
@@ -212,21 +255,75 @@
       </section>
 
       <section class="program">
-        <h2>テストプログラム</h2>
-        {#each Object.entries(testProgram) as [functionId, commands]}
-          <div class="program-block">
-            <h3>function {functionId}</h3>
-            <ol>
-              {#each commands as command}
-                <li>
-                  <span class="command">{command.type}</span>
-                  {#if command.type === "CALL"}
-                    <span class="target">→ {command.target}</span>
-                  {/if}
-                  <span class="color">({command.color})</span>
-                </li>
+        <h2>プログラム</h2>
+
+        <!-- コマンドパレット -->
+        <div class="command-palette">
+          {#each availableCommands as cmd}
+            {@const isSelected = selectedCommand?.type === cmd.type}
+            <button
+              type="button"
+              class={`command-btn ${isSelected ? "selected" : ""}`}
+              on:click={() => selectCommand(cmd.type)}
+              aria-label={cmd.label}
+              aria-pressed={isSelected}
+            >
+              <span class="command-icon">{cmd.icon}</span>
+              <span class="command-label">{cmd.label}</span>
+            </button>
+          {/each}
+        </div>
+
+        <!-- ターゲット関数選択パレット（CALL選択時のみ表示） -->
+        {#if selectedCommand?.type === "CALL"}
+          <div class="target-palette">
+            <h4>呼び出す関数を選択</h4>
+            <div class="target-buttons">
+              {#each level.capabilities.callTargets as target}
+                {@const isTargetSelected = selectedCommand.target === target}
+                <button
+                  type="button"
+                  class={`target-btn ${isTargetSelected ? "selected" : ""}`}
+                  on:click={() => selectCallTarget(target)}
+                  aria-label={`関数 ${target}を呼び出す`}
+                  aria-pressed={isTargetSelected}
+                >
+                  {target}()
+                </button>
               {/each}
-            </ol>
+            </div>
+          </div>
+        {/if}
+
+        <!-- 関数パレット -->
+        {#each Object.entries(level.program.functions) as [functionId, definition]}
+          <div class="function-palette">
+            <div class="function-header">
+              <h3>function {functionId}</h3>
+              <span class="max-slots">{definition.maxSlots} スロット</span>
+            </div>
+            <div class="slots">
+              {#each Array(definition.maxSlots) as _, i}
+                {@const command = $gameState.program[functionId]?.[i]}
+                {@const isHighlighted =
+                  $gameState.runtime.stack.length > 0 &&
+                  $gameState.runtime.stack[$gameState.runtime.stack.length - 1].functionId ===
+                    functionId &&
+                  $gameState.runtime.stack[$gameState.runtime.stack.length - 1].instructionIndex === i}
+                <button
+                  type="button"
+                  class={`slot ${command ? "filled" : "empty"} ${isHighlighted ? "active" : ""}`}
+                  on:click={() => setSlotCommand(functionId, i)}
+                  aria-label={`スロット ${i + 1}`}
+                >
+                  {#if command}
+                    <span class="slot-icon">{getCommandLabel(command)}</span>
+                  {:else}
+                    <span class="slot-placeholder">{i + 1}</span>
+                  {/if}
+                </button>
+              {/each}
+            </div>
           </div>
         {/each}
       </section>
@@ -417,5 +514,181 @@
     .layout {
       grid-template-columns: 1fr;
     }
+  }
+
+  /* コマンドパレット */
+  .command-palette {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .command-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.6rem 0.5rem;
+    background: #f1f5f9;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: #475569;
+  }
+
+  .command-btn:hover:not(:disabled) {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+  }
+
+  .command-btn.selected {
+    background: #dbeafe;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+  }
+
+  .command-btn[aria-pressed="true"] {
+    background: #dbeafe;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+  }
+
+  .command-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .command-label {
+    font-weight: 500;
+  }
+
+  /* 関数パレット */
+  .function-palette {
+    margin-top: 1rem;
+  }
+
+  .function-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  .function-header h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .max-slots {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .slot {
+    width: 48px;
+    height: 48px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-size: 1.2rem;
+    color: #475569;
+  }
+
+  .slot:hover {
+    border-color: #94a3b8;
+    background: #f1f5f9;
+  }
+
+  .slot.filled {
+    border-style: solid;
+    border-color: #94a3b8;
+    background: #fff;
+  }
+
+  .slot.filled:hover {
+    border-color: #dc2626;
+    background: #fef2f2;
+  }
+
+  .slot.empty:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+  }
+
+  .slot.active {
+    border-color: #22c55e;
+    background: #dcfce7;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+  }
+
+  .slot-icon {
+    font-weight: bold;
+  }
+
+  .slot-placeholder {
+    font-size: 0.85rem;
+    color: #94a3b8;
+  }
+
+  /* ターゲット関数選択パレット */
+  .target-palette {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+  }
+
+  .target-palette h4 {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0369a1;
+  }
+
+  .target-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .target-btn {
+    padding: 0.4rem 0.8rem;
+    background: #fff;
+    border: 2px solid #bae6fd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .target-btn:hover {
+    background: #e0f2fe;
+    border-color: #7dd3fc;
+  }
+
+  .target-btn.selected {
+    background: #0ea5e9;
+    border-color: #0284c7;
+    color: #fff;
   }
 </style>
