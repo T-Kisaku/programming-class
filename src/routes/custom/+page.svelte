@@ -20,10 +20,12 @@
     { type: "MOVE_FORWARD", label: "直進", icon: "▲" },
     { type: "TURN_RIGHT", label: "右90°", icon: "↷" },
     { type: "TURN_LEFT", label: "左90°", icon: "↶" },
+    { type: "CALL", label: "呼出", icon: "◆" },
   ] as const;
 
   type SelectedCommand = {
     type: (typeof availableCommands)[number]["type"];
+    target?: string;
   };
 
   let selectedCommand: SelectedCommand | null = null;
@@ -38,16 +40,32 @@
     }
   };
 
+  const selectCallTarget = (target: string) => {
+    if (selectedCommand?.type === "CALL") {
+      selectedCommand.target = target;
+    }
+  };
+
   const setSlotCommand = (functionId: string, slotIndex: number) => {
     if (!gameState) return;
     if (selectedCommand) {
       gameState.setCommand(functionId, slotIndex, {
         type: selectedCommand.type,
         color: "none",
+        target: selectedCommand.type === "CALL" ? selectedCommand.target : undefined,
       });
     } else {
       gameState.setCommand(functionId, slotIndex, null);
     }
+  };
+
+  const getCommandLabel = (command: { type: string; target?: string } | null) => {
+    if (!command) return "";
+    if (command.type === "CALL") {
+      return `◆${command.target}`;
+    }
+    const cmd = availableCommands.find((c) => c.type === command.type);
+    return cmd ? cmd.icon : "";
   };
 
   const getCommandLabel = (command: { type: string } | null) => {
@@ -191,8 +209,9 @@
               {@const tileBackground = tile?.tileColor === "none"
                 ? "#fefcf7"
                 : tile?.tileColor ?? "#fefcf7"}
+              {@const isWall = tile?.type === "wall"}
               <div
-                class="tile"
+                class="tile {isWall ? 'wall' : ''}"
                 style={tileBackground ? `background-color: ${tileBackground}` : ""}
               >
                 {#if hasCoin}
@@ -280,6 +299,29 @@
               <span class="command-label">削除</span>
             </button>
           </div>
+
+          <!-- ターゲット関数選択パレット（CALL選択時のみ表示） -->
+          {#if selectedCommand?.type === "CALL"}
+            {#if level && level.capabilities.callTargets.length > 0}
+              <div class="target-palette">
+                <h4>呼び出す関数を選択</h4>
+                <div class="target-buttons">
+                  {#each level.capabilities.callTargets as target}
+                    {@const isTargetSelected = selectedCommand.target === target}
+                    <button
+                      type="button"
+                      class={`target-btn ${isTargetSelected ? "selected" : ""}`}
+                      on:click={() => selectCallTarget(target)}
+                      aria-label={`関数 ${target}を呼び出す`}
+                      aria-pressed={isTargetSelected}
+                    >
+                      {target}()
+                    </button>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+          {/if}
 
           <!-- 関数パレット -->
           {#each Object.entries(level.program.functions) as [functionId, definition]}
@@ -427,6 +469,11 @@
     border-color: #27272a;
   }
 
+  .tile.wall {
+    background-color: #3f3f46;
+    border-color: #27272a;
+  }
+
   .coin {
     font-size: 1.3rem;
     color: #f59e0b;
@@ -534,6 +581,51 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
     margin-bottom: 1.5rem;
+  }
+
+  .target-palette {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+  }
+
+  .target-palette h4 {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0369a1;
+  }
+
+  .target-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .target-btn {
+    padding: 0.4rem 0.8rem;
+    background: #fff;
+    border: 2px solid #bae6fd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .target-btn:hover {
+    border-color: #7dd3fc;
+    background: #e0f2fe;
+  }
+
+  .target-btn.selected {
+    border-color: #0284c7;
+    background: #0ea5e9;
+    color: #fff;
   }
 
   .command-btn {
