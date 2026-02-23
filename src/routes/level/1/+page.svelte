@@ -164,13 +164,12 @@
     pauseAuto();
   }
 
-  $: if ($gameState.runtime.status === "success" && $gameState.runtime.collectedCoins.length === 1) {
-    // 1ステップ待ってから次のレベルへ
+  // コインを取得した時点で次のレベルへ
+  $: if ($gameState.runtime.lastEvent === "coin" && $gameState.runtime.collectedCoins.length === 1) {
+    pauseAuto();
     setTimeout(() => {
-      if ($gameState.runtime.status === "success") {
-        goToNextLevel();
-      }
-    }, 1000);
+      goToNextLevel();
+    }, 500);
   }
 
   onDestroy(() => {
