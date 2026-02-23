@@ -39,7 +39,7 @@
       colorRule: "allowAllOnNone",
     },
     strings: {
-      success: "クリア！次のレベルへ",
+      success: "Level 1 クリア！",
       failExecuted: "プログラムを実行し終えました。",
       courseOut: "コースアウトしました",
     },
@@ -140,8 +140,8 @@
   };
 
   const goToNextLevel = () => {
-    // TODO: すべてのレベルをクリアしたらおめでとうページへ
-    goto("/level/2");
+    // まだレベル2が存在しないのでクリア画面へ
+    goto("/clear");
   };
 
   const goBack = () => {
