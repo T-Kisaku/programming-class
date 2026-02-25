@@ -29,9 +29,31 @@
     availableCommands.push({ type: "CALL", label: "呼出", icon: "◆" });
   }
 
+  // 色の定義
+  const colorLabelMap: Record<string, { label: string; color: string }> = {
+    "none": { label: "無色", color: "#64748b" },
+    "#1d4ed8": { label: "青", color: "#1d4ed8" },
+    "#3b82f6": { label: "青", color: "#3b82f6" },
+    "#15803d": { label: "緑", color: "#15803d" },
+    "#22c55e": { label: "緑", color: "#22c55e" },
+    "#a16207": { label: "黄", color: "#a16207" },
+    "#eab308": { label: "黄", color: "#eab308" },
+    "#991b1b": { label: "赤", color: "#991b1b" },
+    "#ef4444": { label: "赤", color: "#ef4444" },
+  };
+
+  const colorOptions = level.capabilities.availableColors.map((value) => ({
+    value,
+    label: colorLabelMap[value]?.label ?? value,
+    color: colorLabelMap[value]?.color ?? value,
+  }));
+
+  const hasColors = level.capabilities.availableColors.length > 1;
+
   type SelectedCommand = {
     type: (typeof availableCommands)[number]["type"];
     target?: string;
+    color: string;
   };
 
   let selectedCommand: SelectedCommand | null = null;
@@ -42,7 +64,13 @@
     } else if (selectedCommand?.type === type) {
       selectedCommand = null;
     } else {
-      selectedCommand = { type };
+      selectedCommand = { type, color: "none" };
+    }
+  };
+
+  const selectCommandColor = (color: string) => {
+    if (selectedCommand) {
+      selectedCommand.color = color;
     }
   };
 
@@ -56,7 +84,7 @@
     if (selectedCommand) {
       gameState.setCommand(functionId, slotIndex, {
         type: selectedCommand.type,
-        color: "none",
+        color: selectedCommand.color,
         target: selectedCommand.type === "CALL" ? selectedCommand.target : undefined,
       });
     } else {
@@ -71,6 +99,12 @@
     }
     const cmd = availableCommands.find((c) => c.type === command.type);
     return cmd ? cmd.icon : "";
+  };
+
+  const getCommandColor = (command: { type: string; color: string } | null) => {
+    if (!command) return "";
+    const colorOption = colorOptions.find((c) => c.value === command.color);
+    return colorOption?.color || command.color;
   };
 
   let autoRun = false;
@@ -270,6 +304,29 @@
           </button>
         </div>
 
+        <!-- 色選択パレット（コマンド選択時かつ色が利用可能な場合のみ表示） -->
+        {#if selectedCommand && hasColors}
+          <div class="color-palette">
+            <h4>命令の色</h4>
+            <div class="color-buttons">
+              {#each colorOptions as color}
+                {@const isColorSelected = selectedCommand?.color === color.value}
+                <button
+                  type="button"
+                  class={`color-btn ${isColorSelected ? "selected" : ""}`}
+                  on:click={() => selectCommandColor(color.value)}
+                  aria-label={color.label}
+                  aria-pressed={isColorSelected}
+                  style={`--color: ${color.color}`}
+                >
+                  <span class="color-swatch"></span>
+                  <span class="color-label">{color.label}</span>
+                </button>
+              {/each}
+            </div>
+          </div>
+        {/if}
+
         <!-- ターゲット関数選択パレット（CALL選択時のみ表示） -->
         {#if selectedCommand?.type === "CALL"}
           {#if level.capabilities.callTargets.length > 0}
@@ -303,6 +360,7 @@
             <div class="slots">
               {#each Array(definition.maxSlots) as _, i}
                 {@const command = $gameState.program[functionId]?.[i]}
+                {@const commandColor = command ? getCommandColor(command) : null}
                 {@const isHighlighted =
                   $gameState.runtime.stack.length > 0 &&
                   $gameState.runtime.stack[$gameState.runtime.stack.length - 1].functionId ===
@@ -313,6 +371,7 @@
                   class={`slot ${command ? "filled" : "empty"} ${isHighlighted ? "active" : ""}`}
                   on:click={() => setSlotCommand(functionId, i)}
                   aria-label={`スロット ${i + 1}`}
+                  style={commandColor && commandColor !== "#64748b" ? `--command-color: ${commandColor}` : ""}
                 >
                   {#if command}
                     <span class="slot-icon">{getCommandLabel(command)}</span>
@@ -683,6 +742,66 @@
     color: #991b1b;
   }
 
+  /* 色選択パレット */
+  .color-palette {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+  }
+
+  .color-palette h4 {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .color-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .color-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .color-btn:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+  }
+
+  .color-btn.selected {
+    border-color: var(--color);
+    background: #f0f9ff;
+  }
+
+  .color-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: var(--color);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .color-label {
+    font-size: 0.85rem;
+  }
+
   .function-palette {
     margin-top: 1rem;
   }
@@ -735,6 +854,11 @@
     border-style: solid;
     border-color: #94a3b8;
     background: #fff;
+  }
+
+  .slot.filled[style*="--command-color"] {
+    border-color: var(--command-color);
+    background: color-mix(in srgb, var(--command-color) 15%, #fff);
   }
 
   .slot.filled:hover {
